@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: AeroTwin API
+  version: 1.0.0
+  description: AI-Enabled Real-Time Digital Twin for Aero-Piston Engines in MALE UAVs
+servers:
+  - url: /api/v1
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                  role:
+                    type: string
+  /auth/refresh:
+    post:
+      summary: Refresh Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+  /telemetry/ingest:
+    post:
+      summary: Ingest Telemetry
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                engine_id:
+                  type: string
+                mission_id:
+                  type: string
+                ts:
+                  type: string
+                  format: date-time
+                rpm:
+                  type: number
+                cht:
+                  type: number
+                egt:
+                  type: number
+                oil_pressure:
+                  type: number
+                oil_temp:
+                  type: number
+                fuel_flow:
+                  type: number
+      responses:
+        '200':
+          description: Accepted
+  /engines/{engine_id}/telemetry/latest:
+    get:
+      summary: Get Latest Telemetry
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /engines/{engine_id}/telemetry:
+    get:
+      summary: Get Telemetry Range
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /engines/{engine_id}/faults/latest:
+    get:
+      summary: Get Latest Fault Prediction
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /engines/{engine_id}/rul:
+    get:
+      summary: Get RUL Prediction
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /engines/{engine_id}/bearing-health:
+    get:
+      summary: Get Bearing Health
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /engines/{engine_id}/health-score:
+    get:
+      summary: Get Engine Health Score
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /dashboard/summary:
+    get:
+      summary: Get Dashboard Summary
+      responses:
+        '200':
+          description: Success
+  /missions:
+    post:
+      summary: Create Mission
+      responses:
+        '200':
+          description: Success
+  /missions/{mission_id}:
+    get:
+      summary: Get Mission
+      parameters:
+        - name: mission_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /simulation/run:
+    post:
+      summary: Run Simulation
+      responses:
+        '200':
+          description: Success
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+security:
+  - BearerAuth: []
