@@ -1,0 +1,8 @@
+# Heavy ML dependencies — cached as a separate Docker layer.
+# Only update this file when ML library versions need changing;
+# changes here will invalidate the ML cache layer.
+numpy>=1.24.0,<3.0.0
+# xgboost 2.x is CPU-only by default; v3.x pulls in nvidia_nccl (305 MB)
+xgboost>=2.0.0,<3.0.0
+scikit-learn>=1.3.0
+joblib>=1.3.0

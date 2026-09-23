@@ -35,6 +35,3 @@ ml/models/*.onnx
 # OS
 .DS_Store
 Thumbs.db
-
-# docs
-docs/files/

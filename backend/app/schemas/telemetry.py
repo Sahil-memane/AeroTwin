@@ -20,3 +20,12 @@ class TelemetryIngestBase(BaseModel):
 class TelemetryReading(TelemetryIngestBase):
     class Config:
         from_attributes = True
+
+class RulPrediction(BaseModel):
+    engine_id: UUID
+    ts: datetime
+    rul_hours: float
+    degradation_index: float
+
+    class Config:
+        from_attributes = True

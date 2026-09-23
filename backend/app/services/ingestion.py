@@ -19,15 +19,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models.telemetry_reading import TelemetryReading
+from app.models.rul_prediction import RulPrediction
 from app.ws.connection_manager import manager as ws_manager
+from app.services.rul_adapter import piston_to_cmapss
+from app.services.rul_service import rul_service
+
+import uuid
+DUMMY_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
 
 logger = logging.getLogger(__name__)
 
 # ── Physical sensor bounds for validation ────────────────────────────
 # Values outside these hard limits are rejected as implausible.
 SENSOR_BOUNDS = {
-    "rpm":          (0, 4000),
-    "cht":          (0, 300),       # °C
+    "rpm":          (0, 6500),
+    "cht":          (0, 400),       # °C  (raised to accommodate fault injection)
     "egt":          (0, 1000),      # °C
     "oil_pressure": (0, 150),       # psi
     "oil_temp":     (0, 200),       # °C
@@ -35,6 +41,11 @@ SENSOR_BOUNDS = {
     "vibration_x":  (-50, 50),
     "vibration_y":  (-50, 50),
     "vibration_z":  (-50, 50),
+    # Extended fields from the physics-aware simulator
+    "throttle":             (0, 1.0),
+    "altitude_m":           (-500, 15000),
+    "deviation_score":      (0, 100),
+    "vibration_magnitude":  (0, 100),
 }
 
 
@@ -127,6 +138,12 @@ class MQTTIngestionService:
             logger.exception("Failed to persist telemetry reading")
             return
 
+        # ── Build the enriched data dict for downstream consumers ────
+        enriched = {
+            **data,
+            "ts": ts.isoformat(),
+        }
+
         # Broadcast to WebSocket clients
         engine_id = str(data["engine_id"])
         ws_payload = {
@@ -135,6 +152,8 @@ class MQTTIngestionService:
                 "engine_id": engine_id,
                 "ts": ts.isoformat(),
                 "rpm": data["rpm"],
+                "throttle": data.get("throttle"),
+                "altitude_m": data.get("altitude_m"),
                 "cht": data["cht"],
                 "egt": data["egt"],
                 "oil_pressure": data["oil_pressure"],
@@ -143,12 +162,52 @@ class MQTTIngestionService:
                 "vibration_x": data.get("vibration_x"),
                 "vibration_y": data.get("vibration_y"),
                 "vibration_z": data.get("vibration_z"),
+                "vibration_magnitude": data.get("vibration_magnitude"),
+                "deviation_score": data.get("deviation_score"),
             },
         }
         try:
             await ws_manager.broadcast_to_engine(engine_id, ws_payload)
         except Exception:
             logger.exception("WebSocket broadcast error for engine %s", engine_id)
+
+        # ── RUL Inference ────────────────────────────────────────────
+        try:
+            # Map piston telemetry to CMAPSS format
+            cmapss_row = piston_to_cmapss(data)
+            
+            # Fire inference synchronously for now (XGBoost is fast)
+            # In a real heavy-load scenario, this could be pushed to a worker queue
+            rul_result = rul_service.push_reading(engine_id, cmapss_row)
+            
+            if rul_result:
+                # We got a prediction because the 30-cycle window is full
+                rul_payload = {
+                    "rul_hours": rul_result["rul_cycles"],
+                    "degradation_index": rul_result["degradation_index"],
+                    "rul_lower": rul_result["rul_lower"],
+                    "rul_upper": rul_result["rul_upper"]
+                }
+                
+                # Save prediction to database
+                async with AsyncSessionLocal() as session:
+                    pred = RulPrediction(
+                        ts=ts,
+                        engine_id=data["engine_id"],
+                        model_version_id=DUMMY_MODEL_VERSION_ID,
+                        rul_hours=rul_result["rul_cycles"],
+                        degradation_index=rul_result["degradation_index"]
+                    )
+                    session.add(pred)
+                    await session.commit()
+                
+                # Broadcast prediction via WebSocket
+                await ws_manager.broadcast_to_engine(engine_id, {
+                    "type": "rul_prediction",
+                    "payload": rul_payload
+                })
+        except Exception:
+            logger.exception("Failed to process RUL prediction")
 
     # ── Lifecycle ────────────────────────────────────────────────────
     def _parse_broker_url(self) -> tuple[str, int]:

@@ -10,8 +10,9 @@ from app.core.config import settings
 from app.core.security import get_current_active_user, require_role
 from app.models.engine import Engine as EngineModel
 from app.models.telemetry_reading import TelemetryReading as TelemetryReadingModel
+from app.models.rul_prediction import RulPrediction as RulPredictionModel
 from app.schemas.engine import Engine as EngineSchema, EngineCreate, EngineUpdate
-from app.schemas.telemetry import TelemetryReading as TelemetryReadingSchema
+from app.schemas.telemetry import TelemetryReading as TelemetryReadingSchema, RulPrediction as RulPredictionSchema
 from app.ws.connection_manager import manager as ws_manager
 
 router = APIRouter()
@@ -148,6 +149,30 @@ async def get_latest_telemetry(
     if not reading:
         raise HTTPException(status_code=404, detail="No telemetry data available")
     return reading
+
+
+@router.get("/{engine_id}/rul", response_model=List[RulPredictionSchema])
+async def get_rul_predictions(
+    engine_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_active_user),
+    limit: int = 100,
+):
+    """Get the most recent RUL predictions for an engine."""
+    # Verify engine exists
+    engine_result = await db.execute(
+        select(EngineModel).where(EngineModel.id == engine_id)
+    )
+    if not engine_result.scalars().first():
+        raise HTTPException(status_code=404, detail="Engine not found")
+
+    result = await db.execute(
+        select(RulPredictionModel)
+        .where(RulPredictionModel.engine_id == engine_id)
+        .order_by(RulPredictionModel.ts.desc())
+        .limit(limit)
+    )
+    return result.scalars().all()
 
 
 @router.websocket("/{engine_id}/live")
