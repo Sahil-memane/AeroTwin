@@ -16,9 +16,17 @@ This system performs real-time multi-class sensor fault detection for UAVs (dron
 The model ingests 32 telemetry channels sampled at 20 Hz over a 4-second sliding window (80 timesteps x 32 channels), evaluated every 1 second (20-step stride) once the buffer is full.
 # 2. Input Telemetry Schema
 
-# 3. Output Fault Classes
+# 3. Output Fault Classes & Database Schema
 The model returns an integer class ID (0-6), a human-readable label, and a 7-element probability vector.
 
+This is stored in the `fault_predictions` database table using the following schema:
+- `ts`: (DateTime) Timestamp of the prediction
+- `engine_id`: (UUID) Engine identifier
+- `model_version_id`: (UUID) ML Model version identifier
+- `class_id`: (Integer) Integer class ID from 0 to 6
+- `fault_class`: (String) Human readable label ('No failure', 'RC', 'GPS', 'Aileron', 'Elevator', 'Rudder', 'Engine failure')
+- `confidence`: (Float) The maximum probability value (confidence of the predicted class)
+- `probabilities`: (JSON) The full 7-element probability vector array
 # 4. Dataset & Ground Truth
 70 flight sessions (10 per class x 7 classes) were processed into 27,312 sliding windows (4 s window, 1 s stride, 20 Hz), with row-level labeling based on active fault-injection status.
 

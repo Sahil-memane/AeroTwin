@@ -521,7 +521,7 @@ Role gates in the UI (e.g. hiding maintenance-log write actions from an 'operato
 
 | Model | Dataset | Output fields | DB table | Live WS event |
 | --- | --- | --- | --- | --- |
-| Fault | ALFA (CMU AirLab) | fault_class, confidence | fault_predictions | fault_prediction |
+| Fault | ALFA (CMU AirLab) | class_id, fault_class, confidence, probabilities | fault_predictions | fault_prediction |
 | RUL | NASA C-MAPSS | rul_cycles, degradation_index | rul_predictions | rul_prediction |
 | Bearing | CWRU | fault_location, severity_score | bearing_health_readings | bearing_health |
 | Aux | AI4I 2020 + unconfirmed dataset | auxiliary score | none yet (proposed) | none yet |

@@ -104,9 +104,11 @@ def upgrade() -> None:
     sa.Column('ts', sa.DateTime(), nullable=False),
     sa.Column('engine_id', sa.UUID(), nullable=False),
     sa.Column('model_version_id', sa.UUID(), nullable=False),
+    sa.Column('class_id', sa.Integer(), nullable=False),
     sa.Column('fault_class', sa.String(), nullable=False),
     sa.Column('confidence', sa.Float(), nullable=False),
-    sa.CheckConstraint("fault_class IN ('No failure', 'RC', 'GPS', 'Aileron', 'Elevator', 'Rudder', 'Engine failure')", name='valid_fault_class'),
+    sa.Column('probabilities', sa.JSON(), nullable=False),
+    sa.CheckConstraint("fault_class IN ('No Failure', 'RC Failure', 'GPS Failure', 'Accelerometer Failure', 'Gyro Failure', 'Compass Failure', 'Barometer Failure')", name='valid_fault_class'),
     sa.ForeignKeyConstraint(['engine_id'], ['engines.id'], ),
     sa.ForeignKeyConstraint(['model_version_id'], ['model_registry.id'], ),
     sa.PrimaryKeyConstraint('ts', 'engine_id')

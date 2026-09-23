@@ -20,12 +20,15 @@ from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models.telemetry_reading import TelemetryReading
 from app.models.rul_prediction import RulPrediction
+from app.models.fault_prediction import FaultPrediction
 from app.ws.connection_manager import manager as ws_manager
 from app.services.rul_adapter import piston_to_cmapss
 from app.services.rul_service import rul_service
+from app.services.fault_service import fault_service
 
 import uuid
 DUMMY_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
+FAULT_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000004")
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +211,37 @@ class MQTTIngestionService:
                 })
         except Exception:
             logger.exception("Failed to process RUL prediction")
+
+        # ── Fault Inference ──────────────────────────────────────────
+        try:
+            fault_result = fault_service.push_reading(engine_id, data)
+            if fault_result:
+                fault_payload = {
+                    "class_id": fault_result["class_id"],
+                    "fault_class": fault_result["fault_class"],
+                    "confidence": fault_result["confidence"],
+                    "probabilities": fault_result["probabilities"]
+                }
+                
+                async with AsyncSessionLocal() as session:
+                    fault_pred = FaultPrediction(
+                        ts=ts,
+                        engine_id=data["engine_id"],
+                        model_version_id=FAULT_MODEL_VERSION_ID,
+                        class_id=fault_result["class_id"],
+                        fault_class=fault_result["fault_class"],
+                        confidence=fault_result["confidence"],
+                        probabilities=fault_result["probabilities"]
+                    )
+                    session.add(fault_pred)
+                    await session.commit()
+                
+                await ws_manager.broadcast_to_engine(engine_id, {
+                    "type": "fault_prediction",
+                    "payload": fault_payload
+                })
+        except Exception:
+            logger.exception("Failed to process Fault prediction")
 
     # ── Lifecycle ────────────────────────────────────────────────────
     def _parse_broker_url(self) -> tuple[str, int]:

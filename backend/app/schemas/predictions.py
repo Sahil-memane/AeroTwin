@@ -7,8 +7,10 @@ class FaultPrediction(BaseModel):
     ts: datetime
     engine_id: UUID
     model_version_id: UUID
+    class_id: int
     fault_class: str
     confidence: float
+    probabilities: list[float]
     
     class Config:
         from_attributes = True
