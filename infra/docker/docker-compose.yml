@@ -59,6 +59,8 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    volumes:
+      - ../../backend:/app
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/aerotwin
       JWT_SECRET: local-dev-secret-change-in-production

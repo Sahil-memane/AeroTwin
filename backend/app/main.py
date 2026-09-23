@@ -1,3 +1,6 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -6,15 +9,33 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.api.v1 import auth, engines, users, uav_assets, missions, dashboard
+from app.services.ingestion import ingestion_service
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ── Rate Limiter ──
 limiter = Limiter(key_func=get_remote_address)
+
+
+# ── Lifespan (startup / shutdown) ──
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ── Startup ──
+    logger.info("Starting MQTT ingestion service…")
+    await ingestion_service.start()
+    yield
+    # ── Shutdown ──
+    logger.info("Stopping MQTT ingestion service…")
+    await ingestion_service.stop()
+
 
 # ── FastAPI App ──
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
 )
 
 app.state.limiter = limiter
