@@ -138,10 +138,10 @@ Historical + live telemetry → sequence windowing → LSTM (PyTorch) with an XG
 ## 4.4 Output
 
 
-| Fields | rul_hours (estimated flight-hours remaining), degradation_index (0–1 normalized trend) |
+| Fields | rul_cycles (estimated flight-cycles remaining), degradation_index (0–1 normalized trend) |
 | --- | --- |
 | Database table | rul_predictions — references engine_id and model_registry.id |
-| Alert trigger | A degradation_index or rul_hours crossing a configured threshold is written to alerts with source = 'rul_model' |
+| Alert trigger | A degradation_index or rul_cycles crossing a configured threshold is written to alerts with source = 'rul_model' |
 | Served by | GET /api/v1/engines/{engine_id}/rul?from=&to= (defaults to last 90 days) |
 
 
@@ -154,7 +154,7 @@ Held-out test split should be by unit ID (not by row), so the model is evaluated
 
 LSTM vs. XGBoost is still an open decision per the dataset guide's sorting checklist — keep both in the model registry during evaluation and let validation_score decide which becomes is_active.
 
-degradation_index (not just rul_hours) is what should drive the dashboard's trend chart, since it's normalized and comparable across engines with different total operating-hour baselines.
+degradation_index (not just rul_cycles) is what should drive the dashboard's trend chart, since it's normalized and comparable across engines with different total operating-cycle baselines.
 
 
 # 5. Bearing & Vibration Health Model
@@ -296,7 +296,7 @@ Health fusion is where the 4 trained models' outputs stop being 4 separate numbe
 | Input | From | What it contributes |
 | --- | --- | --- |
 | fault_class + confidence | Fault model | Discrete fault flag; a high-confidence non-'no failure' class should dominate the combined score regardless of the other three. |
-| rul_hours + degradation_index | RUL model | Long-horizon trend signal — drives the maintenance-planning half of the score rather than an immediate alert. |
+| rul_cycles + degradation_index | RUL model | Long-horizon trend signal — drives the maintenance-planning half of the score rather than an immediate alert. |
 | fault_location + severity_score | Bearing model | Mechanical-wear signal, independent of the physics/thermodynamic branch. |
 | Auxiliary fault-likelihood score | Aux model | Supporting signal only — weighted lower until Dataset 2 (Section 6.1) is confirmed and evaluated. |
 | Expected-vs-actual deviation | Physics model | Independent sanity check; a large deviation with low ML confidence is itself worth surfacing rather than being averaged away. |
@@ -522,7 +522,7 @@ Role gates in the UI (e.g. hiding maintenance-log write actions from an 'operato
 | Model | Dataset | Output fields | DB table | Live WS event |
 | --- | --- | --- | --- | --- |
 | Fault | ALFA (CMU AirLab) | fault_class, confidence | fault_predictions | fault_prediction |
-| RUL | NASA C-MAPSS | rul_hours, degradation_index | rul_predictions | rul_prediction |
+| RUL | NASA C-MAPSS | rul_cycles, degradation_index | rul_predictions | rul_prediction |
 | Bearing | CWRU | fault_location, severity_score | bearing_health_readings | bearing_health |
 | Aux | AI4I 2020 + unconfirmed dataset | auxiliary score | none yet (proposed) | none yet |
 

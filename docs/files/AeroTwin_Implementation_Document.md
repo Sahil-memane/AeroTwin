@@ -779,7 +779,7 @@ All endpoints are versioned under `/api/v1`. Authentication is via short-lived J
 | Endpoint | Auth | Request | Response | Errors |
 |---|---|---|---|---|
 | `GET /api/v1/engines/{engine_id}/faults/latest` | Bearer JWT | Path: `engine_id` | `{ ts, fault_class, confidence, model_version }` | `401`/`403` · `404` no prediction yet |
-| `GET /api/v1/engines/{engine_id}/rul` | Bearer JWT | Query: `from?`, `to?` (defaults to last 90 days) | `[{ ts, rul_hours, degradation_index }, ...]` | `400` invalid range · `401`/`403` · `404` no data |
+| `GET /api/v1/engines/{engine_id}/rul` | Bearer JWT | Query: `from?`, `to?` (defaults to last 90 days) | `[{ ts, rul_cycles, degradation_index }, ...]` | `400` invalid range · `401`/`403` · `404` no data |
 | `GET /api/v1/engines/{engine_id}/bearing-health` | Bearer JWT | Path: `engine_id` | `{ ts, fault_location, severity_score }` | `401`/`403` · `404` no data |
 
 **Health & Dashboard**

@@ -183,7 +183,7 @@ class MQTTIngestionService:
             if rul_result:
                 # We got a prediction because the 30-cycle window is full
                 rul_payload = {
-                    "rul_hours": rul_result["rul_cycles"],
+                    "rul_cycles": rul_result["rul_cycles"],
                     "degradation_index": rul_result["degradation_index"],
                     "rul_lower": rul_result["rul_lower"],
                     "rul_upper": rul_result["rul_upper"]
@@ -195,7 +195,7 @@ class MQTTIngestionService:
                         ts=ts,
                         engine_id=data["engine_id"],
                         model_version_id=DUMMY_MODEL_VERSION_ID,
-                        rul_hours=rul_result["rul_cycles"],
+                        rul_cycles=rul_result["rul_cycles"],
                         degradation_index=rul_result["degradation_index"]
                     )
                     session.add(pred)

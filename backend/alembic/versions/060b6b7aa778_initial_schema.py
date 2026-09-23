@@ -125,7 +125,7 @@ def upgrade() -> None:
     sa.Column('ts', sa.DateTime(), nullable=False),
     sa.Column('engine_id', sa.UUID(), nullable=False),
     sa.Column('model_version_id', sa.UUID(), nullable=False),
-    sa.Column('rul_hours', sa.Float(), nullable=False),
+    sa.Column('rul_cycles', sa.Float(), nullable=False),
     sa.Column('degradation_index', sa.Float(), nullable=False),
     sa.ForeignKeyConstraint(['engine_id'], ['engines.id'], ),
     sa.ForeignKeyConstraint(['model_version_id'], ['model_registry.id'], ),

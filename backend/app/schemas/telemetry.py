@@ -24,7 +24,7 @@ class TelemetryReading(TelemetryIngestBase):
 class RulPrediction(BaseModel):
     engine_id: UUID
     ts: datetime
-    rul_hours: float
+    rul_cycles: float
     degradation_index: float
 
     class Config:

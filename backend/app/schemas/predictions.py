@@ -17,7 +17,7 @@ class RulPrediction(BaseModel):
     ts: datetime
     engine_id: UUID
     model_version_id: UUID
-    rul_hours: float
+    rul_cycles: float
     degradation_index: float
     
     class Config:

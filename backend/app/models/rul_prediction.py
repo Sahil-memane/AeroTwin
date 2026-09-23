@@ -9,5 +9,5 @@ class RulPrediction(Base):
     engine_id = Column(UUID(as_uuid=True), ForeignKey('engines.id'), primary_key=True, nullable=False)
     model_version_id = Column(UUID(as_uuid=True), ForeignKey('model_registry.id'), nullable=False)
     
-    rul_hours = Column(Float, nullable=False)
+    rul_cycles = Column(Float, nullable=False)
     degradation_index = Column(Float, nullable=False)
