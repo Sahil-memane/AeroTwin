@@ -22,16 +22,19 @@ from app.models.telemetry_reading import TelemetryReading
 from app.models.rul_prediction import RulPrediction
 from app.models.fault_prediction import FaultPrediction
 from app.models.aux_prediction import AuxPrediction
+from app.models.bearing_health_reading import BearingHealthReading
 from app.ws.connection_manager import manager as ws_manager
 from app.services.rul_adapter import piston_to_cmapss
 from app.services.rul_service import rul_service
 from app.services.fault_service import fault_service
 from app.services.aux_service import aux_service
+from app.services.bearing_service import bearing_service
 
 import uuid
-DUMMY_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
-FAULT_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000004")
-AUX_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000005")
+DUMMY_MODEL_VERSION_ID   = uuid.UUID("00000000-0000-0000-0000-000000000003")
+FAULT_MODEL_VERSION_ID   = uuid.UUID("00000000-0000-0000-0000-000000000004")
+AUX_MODEL_VERSION_ID     = uuid.UUID("00000000-0000-0000-0000-000000000005")
+BEARING_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000006")
 
 logger = logging.getLogger(__name__)
 
@@ -280,6 +283,39 @@ class MQTTIngestionService:
                 })
         except Exception:
             logger.exception("Failed to process Aux prediction")
+
+        # ── Bearing Inference ─────────────────────────────────────────
+        try:
+            bearing_result = bearing_service.push_reading(engine_id, data)
+            if bearing_result:
+                bearing_payload = {
+                    "class_id":        bearing_result["class_id"],
+                    "class_label":     bearing_result["class_label"],
+                    "fault_location":  bearing_result["fault_location"],
+                    "severity_inches": bearing_result["severity_inches"],
+                    "confidence":      bearing_result["confidence"],
+                }
+
+                async with AsyncSessionLocal() as session:
+                    bearing_pred = BearingHealthReading(
+                        ts=ts,
+                        engine_id=data["engine_id"],
+                        model_version_id=BEARING_MODEL_VERSION_ID,
+                        class_id=bearing_result["class_id"],
+                        class_label=bearing_result["class_label"],
+                        fault_location=bearing_result["fault_location"],
+                        severity_inches=bearing_result["severity_inches"],
+                        confidence=bearing_result["confidence"],
+                    )
+                    session.add(bearing_pred)
+                    await session.commit()
+
+                await ws_manager.broadcast_to_engine(engine_id, {
+                    "type": "bearing_prediction",
+                    "payload": bearing_payload
+                })
+        except Exception:
+            logger.exception("Failed to process Bearing prediction")
 
     # ── Lifecycle ────────────────────────────────────────────────────
     def _parse_broker_url(self) -> tuple[str, int]:

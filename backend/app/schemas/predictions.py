@@ -29,9 +29,12 @@ class BearingHealthReading(BaseModel):
     ts: datetime
     engine_id: UUID
     model_version_id: UUID
+    class_id: int
+    class_label: str
     fault_location: str
-    severity_score: float
-    
+    severity_inches: Optional[float]   # null for Normal class
+    confidence: float
+
     class Config:
         from_attributes = True
 

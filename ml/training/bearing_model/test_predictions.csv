@@ -1,0 +1,691 @@
+actual_class,predicted_class,confidence,fault_location,severity_inches
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9999942779541016,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,0.9969115257263184,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.8710829019546509,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,0.9999979734420776,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,0.9998703002929688,Ball / Rolling Element,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,0.9543578624725342,Ball / Rolling Element,0.007
+Ball_007,Ball_007,0.764127254486084,Ball / Rolling Element,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,0.9999984502792358,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,0.9999995231628418,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,OR_014,0.7398987412452698,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_007,Ball_007,0.9999998807907104,Ball / Rolling Element,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9999899864196777,Outer Race,0.014
+OR_014,OR_014,0.9978500604629517,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,0.9993492960929871,Ball / Rolling Element,0.007
+Ball_007,Ball_007,0.9990504384040833,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_007,Ball_007,0.9999998807907104,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999996423721313,Outer Race,0.014
+Ball_007,Ball_007,0.9987333416938782,Ball / Rolling Element,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,0.9999995231628418,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_021,Ball_021,0.9999979734420776,Ball / Rolling Element,0.021
+Ball_014,Ball_014,0.9999997615814209,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9995297789573669,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9983615279197693,Ball / Rolling Element,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_014,OR_014,0.9999953508377075,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.9572015404701233,Ball / Rolling Element,0.007
+OR_021,OR_021,0.9999994039535522,Outer Race,0.021
+Ball_007,Ball_007,0.9530079364776611,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_021,Ball_021,0.9999953508377075,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9999995231628418,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9999939203262329,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_007,Ball_007,0.9999232292175293,Ball / Rolling Element,0.007
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9986879229545593,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,0.9999997615814209,Ball / Rolling Element,0.014
+OR_021,OR_021,0.9995224475860596,Outer Race,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9895735383033752,Ball / Rolling Element,0.007
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_014,OR_014,0.9991722702980042,Outer Race,0.014
+OR_014,OR_014,0.9999439716339111,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_014,OR_014,0.9999995231628418,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_014,OR_014,0.9999922513961792,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.9297423362731934,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,0.9948234558105469,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,0.9999152421951294,Ball / Rolling Element,0.007
+Ball_014,Ball_014,0.9999996423721313,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+Ball_007,Ball_007,0.9999747276306152,Ball / Rolling Element,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_014,OR_014,1.0,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,0.9999998807907104,Outer Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_007,Ball_007,0.9999701976776123,Ball / Rolling Element,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.9999994039535522,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9997544884681702,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,0.9999998807907104,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,0.9999971389770508,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.998870313167572,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9732897281646729,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,0.9985404014587402,Ball / Rolling Element,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_014,OR_014,0.9999998807907104,Outer Race,0.014
+Ball_007,Ball_007,0.9999958276748657,Ball / Rolling Element,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9336391091346741,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999232292175293,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9999396800994873,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9994190335273743,Outer Race,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9999967813491821,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9999982118606567,Ball / Rolling Element,0.014
+Ball_021,Ball_021,0.9999634027481079,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,0.9999974966049194,Ball / Rolling Element,0.014
+OR_014,OR_014,0.9274072647094727,Outer Race,0.014
+OR_014,OR_014,0.9989311099052429,Outer Race,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,1.0,Outer Race,0.014
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,0.987339437007904,Ball / Rolling Element,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,0.9999997615814209,Inner Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9999840259552002,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_014,Ball_014,0.9999953508377075,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,0.999987006187439,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_021,OR_021,0.9997955560684204,Outer Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,0.9999991655349731,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,0.9999992847442627,Ball / Rolling Element,0.007
+Ball_007,Ball_007,0.9999387264251709,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999979734420776,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,0.9999998807907104,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9997566342353821,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.999046266078949,Ball / Rolling Element,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,0.9999986886978149,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.5660793781280518,Ball / Rolling Element,0.007
+Ball_007,Ball_007,0.9797698259353638,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999995231628418,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,0.999962329864502,Outer Race,0.014
+Ball_021,Ball_021,0.9999994039535522,Ball / Rolling Element,0.021
+OR_021,OR_021,0.9999998807907104,Outer Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,0.9999963045120239,Outer Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_014,OR_014,0.9997453093528748,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9999779462814331,Outer Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_014,Ball_014,0.9999866485595703,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9996652603149414,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,0.9999997615814209,Inner Race,0.021
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+OR_014,Ball_007,0.850060224533081,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,0.999997615814209,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,0.9998887777328491,Ball / Rolling Element,0.007
+Ball_014,Ball_014,0.9999786615371704,Ball / Rolling Element,0.014
+OR_021,OR_021,0.9999997615814209,Outer Race,0.021
+IR_007,IR_007,0.9999986886978149,Inner Race,0.007
+Ball_014,Ball_014,0.9987139701843262,Ball / Rolling Element,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,0.9828343391418457,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9981683492660522,Ball / Rolling Element,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9928576946258545,Ball / Rolling Element,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_014,OR_014,1.0,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,0.9999990463256836,Outer Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9992584586143494,Outer Race,0.014
+Ball_007,Ball_007,0.9935508966445923,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,0.9954996705055237,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,0.9462832808494568,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9999964237213135,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.999996542930603,Ball / Rolling Element,0.014
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9999997615814209,Ball / Rolling Element,0.007
+Ball_014,Ball_014,0.9999969005584717,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.999546468257904,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9999998807907104,Ball / Rolling Element,0.014
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,0.9999977350234985,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_007,Ball_007,0.9678484797477722,Ball / Rolling Element,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,0.9999998807907104,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,0.9999995231628418,Outer Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9999967813491821,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,0.9954760670661926,Ball / Rolling Element,0.007
+Ball_007,Ball_007,0.9999899864196777,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999648332595825,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,0.9406908750534058,Ball / Rolling Element,0.014
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_007,OR_007,0.9999996423721313,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,OR_014,0.7584238052368164,Outer Race,0.014
+OR_014,OR_014,0.9999988079071045,Outer Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,0.9999972581863403,Outer Race,0.021
+Ball_021,Ball_021,0.9985935091972351,Ball / Rolling Element,0.021
+OR_014,OR_014,0.9987010955810547,Outer Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9999933242797852,Ball / Rolling Element,0.014
+Ball_021,IR_021,1.0,Inner Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_014,OR_014,0.7983201146125793,Outer Race,0.014
+Ball_007,OR_014,0.9921594858169556,Outer Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,0.9999995231628418,Outer Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_014,OR_014,0.9996517896652222,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,0.9999998807907104,Inner Race,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,0.9999903440475464,Outer Race,0.007
+Ball_007,Ball_007,0.9952211976051331,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999122619628906,Outer Race,0.014
+Ball_014,Ball_014,0.9700910449028015,Ball / Rolling Element,0.014
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,0.9984089136123657,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9943938255310059,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_021,IR_021,0.9999878406524658,Inner Race,0.021
+Ball_007,Ball_007,0.9988640546798706,Ball / Rolling Element,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Normal,Normal,1.0,No fault,
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Normal,Normal,1.0,No fault,
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+OR_021,OR_021,0.9999996423721313,Outer Race,0.021
+Ball_021,Ball_021,0.9987791180610657,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_014,Ball_014,0.9999979734420776,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.7956992983818054,Outer Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_014,OR_014,0.9998912811279297,Outer Race,0.014
+Ball_014,Ball_014,0.7245886325836182,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_007,Ball_007,0.9946147799491882,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,0.9827170372009277,Ball / Rolling Element,0.007
+IR_007,IR_007,1.0,Inner Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9999997615814209,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.982467532157898,Outer Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_014,OR_014,0.9999997615814209,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_014,OR_014,0.999984860420227,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,0.9999997615814209,Outer Race,0.021
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_014,OR_014,0.9999996423721313,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,0.9999998807907104,Ball / Rolling Element,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9992963075637817,Ball / Rolling Element,0.007
+OR_007,OR_007,0.9999992847442627,Outer Race,0.007
+Ball_007,Ball_007,0.9999654293060303,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,0.9992504715919495,Ball / Rolling Element,0.007
+Ball_021,Ball_021,0.9999997615814209,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_007,Ball_007,0.7849798202514648,Ball / Rolling Element,0.007
+OR_007,OR_007,1.0,Outer Race,0.007
+Ball_007,Ball_007,0.9999439716339111,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_014,Ball_014,0.9999994039535522,Ball / Rolling Element,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_014,OR_014,0.9999998807907104,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_021,IR_021,1.0,Inner Race,0.021
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9116714596748352,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9999988079071045,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+IR_007,IR_007,1.0,Inner Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9999970197677612,Outer Race,0.014
+Ball_014,Ball_014,0.9999604225158691,Ball / Rolling Element,0.014
+IR_021,IR_021,0.9999997615814209,Inner Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_014,Ball_014,1.0,Ball / Rolling Element,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,OR_014,0.9988628625869751,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+Ball_014,Ball_014,0.9999979734420776,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_014,OR_014,0.9999992847442627,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_014,Ball_014,0.999631404876709,Ball / Rolling Element,0.014
+Ball_014,Ball_014,0.9999154806137085,Ball / Rolling Element,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_014,OR_014,1.0,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_007,Ball_007,0.9999831914901733,Ball / Rolling Element,0.007
+Normal,Normal,1.0,No fault,
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_007,Ball_007,0.9968715310096741,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_014,Ball_014,0.9999833106994629,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9999986886978149,Ball / Rolling Element,0.007
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_021,OR_021,1.0,Outer Race,0.021
+Normal,Normal,1.0,No fault,
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_014,Ball_014,0.9999973773956299,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9999984502792358,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_007,IR_007,1.0,Inner Race,0.007
+OR_021,OR_021,0.9998220205307007,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,1.0,Outer Race,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+OR_014,OR_014,0.9999954700469971,Outer Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_014,Ball_014,0.9999094009399414,Ball / Rolling Element,0.014
+Ball_007,Ball_007,0.9999994039535522,Ball / Rolling Element,0.007
+OR_014,OR_014,0.9995375275611877,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9999818801879883,Outer Race,0.014
+Normal,Normal,1.0,No fault,
+Normal,Normal,1.0,No fault,
+Ball_007,Ball_007,0.9999960660934448,Ball / Rolling Element,0.007
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+OR_007,OR_007,0.9999995231628418,Outer Race,0.007
+Ball_014,Ball_014,0.9999998807907104,Ball / Rolling Element,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+OR_014,OR_014,0.9959855675697327,Outer Race,0.014
+IR_014,IR_014,1.0,Inner Race,0.014
+OR_007,OR_007,0.9999970197677612,Outer Race,0.007
+Ball_021,Ball_021,0.9999878406524658,Ball / Rolling Element,0.021
+OR_014,OR_014,0.9999926090240479,Outer Race,0.014
+OR_021,OR_021,1.0,Outer Race,0.021
+Ball_014,Ball_014,0.9999784231185913,Ball / Rolling Element,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+OR_014,OR_014,1.0,Outer Race,0.014
+OR_014,Ball_007,0.9973044395446777,Ball / Rolling Element,0.007
+IR_007,IR_007,0.9999998807907104,Inner Race,0.007
+OR_014,OR_014,0.9999980926513672,Outer Race,0.014
+IR_021,IR_021,1.0,Inner Race,0.021
+Ball_007,Ball_007,0.9999992847442627,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_007,Ball_007,1.0,Ball / Rolling Element,0.007
+OR_021,OR_021,1.0,Outer Race,0.021
+IR_014,IR_014,1.0,Inner Race,0.014
+Ball_021,Ball_021,1.0,Ball / Rolling Element,0.021
+Ball_007,Ball_007,0.9974437952041626,Ball / Rolling Element,0.007
+IR_014,IR_014,1.0,Inner Race,0.014

@@ -1,0 +1,42 @@
+{
+    "Normal": {
+        "fault_location": "No fault",
+        "severity_inches": null
+    },
+    "Ball_007": {
+        "fault_location": "Ball / Rolling Element",
+        "severity_inches": 0.007
+    },
+    "Ball_014": {
+        "fault_location": "Ball / Rolling Element",
+        "severity_inches": 0.014
+    },
+    "Ball_021": {
+        "fault_location": "Ball / Rolling Element",
+        "severity_inches": 0.021
+    },
+    "IR_007": {
+        "fault_location": "Inner Race",
+        "severity_inches": 0.007
+    },
+    "IR_014": {
+        "fault_location": "Inner Race",
+        "severity_inches": 0.014
+    },
+    "IR_021": {
+        "fault_location": "Inner Race",
+        "severity_inches": 0.021
+    },
+    "OR_007": {
+        "fault_location": "Outer Race",
+        "severity_inches": 0.007
+    },
+    "OR_014": {
+        "fault_location": "Outer Race",
+        "severity_inches": 0.014
+    },
+    "OR_021": {
+        "fault_location": "Outer Race",
+        "severity_inches": 0.021
+    }
+}
