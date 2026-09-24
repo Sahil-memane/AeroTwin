@@ -1,0 +1,97 @@
+{
+    "TWF": {
+        "full_name": "Tool Wear Failure",
+        "n_positive_cases": 46,
+        "test_accuracy": 0.9845,
+        "test_precision": 0.0,
+        "test_recall": 0.0,
+        "test_f1": 0.0,
+        "test_roc_auc": 0.9605446732518556,
+        "confusion_matrix": [
+            [
+                1969,
+                22
+            ],
+            [
+                9,
+                0
+            ]
+        ]
+    },
+    "HDF": {
+        "full_name": "Heat Dissipation Failure",
+        "n_positive_cases": 115,
+        "test_accuracy": 1.0,
+        "test_precision": 1.0,
+        "test_recall": 1.0,
+        "test_f1": 1.0,
+        "test_roc_auc": 1.0,
+        "confusion_matrix": [
+            [
+                1977,
+                0
+            ],
+            [
+                0,
+                23
+            ]
+        ]
+    },
+    "PWF": {
+        "full_name": "Power Failure",
+        "n_positive_cases": 95,
+        "test_accuracy": 1.0,
+        "test_precision": 1.0,
+        "test_recall": 1.0,
+        "test_f1": 1.0,
+        "test_roc_auc": 1.0,
+        "confusion_matrix": [
+            [
+                1981,
+                0
+            ],
+            [
+                0,
+                19
+            ]
+        ]
+    },
+    "OSF": {
+        "full_name": "Overstrain Failure",
+        "n_positive_cases": 98,
+        "test_accuracy": 0.998,
+        "test_precision": 0.9444444444444444,
+        "test_recall": 0.85,
+        "test_f1": 0.8947368421052632,
+        "test_roc_auc": 0.9995959595959596,
+        "confusion_matrix": [
+            [
+                1979,
+                1
+            ],
+            [
+                3,
+                17
+            ]
+        ]
+    },
+    "RNF": {
+        "full_name": "Random/Unknown Failure",
+        "n_positive_cases": 19,
+        "test_accuracy": 0.9975,
+        "test_precision": 0.0,
+        "test_recall": 0.0,
+        "test_f1": 0.0,
+        "test_roc_auc": 0.5986973947895792,
+        "confusion_matrix": [
+            [
+                1995,
+                1
+            ],
+            [
+                4,
+                0
+            ]
+        ]
+    }
+}

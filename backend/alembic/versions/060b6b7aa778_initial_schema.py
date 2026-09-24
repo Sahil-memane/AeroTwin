@@ -85,7 +85,12 @@ def upgrade() -> None:
     sa.Column('ts', sa.DateTime(), nullable=False),
     sa.Column('engine_id', sa.UUID(), nullable=False),
     sa.Column('model_version_id', sa.UUID(), nullable=False),
-    sa.Column('aux_score', sa.Float(), nullable=False),
+    sa.Column('failure_status', sa.String(), nullable=False),
+    sa.Column('risk_level', sa.String(), nullable=False),
+    sa.Column('failure_probability_pct', sa.Float(), nullable=False),
+    sa.Column('detected_failure_types', sa.JSON(), nullable=False),
+    sa.Column('primary_failure_cause', sa.String(), nullable=True),
+    sa.Column('recommended_action', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['engine_id'], ['engines.id'], ),
     sa.ForeignKeyConstraint(['model_version_id'], ['model_registry.id'], ),
     sa.PrimaryKeyConstraint('ts', 'engine_id')

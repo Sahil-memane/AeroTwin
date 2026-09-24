@@ -21,14 +21,17 @@ from app.db.session import AsyncSessionLocal
 from app.models.telemetry_reading import TelemetryReading
 from app.models.rul_prediction import RulPrediction
 from app.models.fault_prediction import FaultPrediction
+from app.models.aux_prediction import AuxPrediction
 from app.ws.connection_manager import manager as ws_manager
 from app.services.rul_adapter import piston_to_cmapss
 from app.services.rul_service import rul_service
 from app.services.fault_service import fault_service
+from app.services.aux_service import aux_service
 
 import uuid
 DUMMY_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
 FAULT_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000004")
+AUX_MODEL_VERSION_ID = uuid.UUID("00000000-0000-0000-0000-000000000005")
 
 logger = logging.getLogger(__name__)
 
@@ -242,6 +245,41 @@ class MQTTIngestionService:
                 })
         except Exception:
             logger.exception("Failed to process Fault prediction")
+
+        # ── Aux Inference ────────────────────────────────────────────
+        try:
+            aux_result = aux_service.push_reading(engine_id, data)
+            if aux_result:
+                aux_payload = {
+                    "failure_status": aux_result["failure_status"],
+                    "risk_level": aux_result["risk_level"],
+                    "failure_probability_pct": aux_result["failure_probability_pct"],
+                    "detected_failure_types": aux_result["detected_failure_types"],
+                    "primary_failure_cause": aux_result["primary_failure_cause"],
+                    "recommended_action": aux_result["recommended_action"]
+                }
+                
+                async with AsyncSessionLocal() as session:
+                    aux_pred = AuxPrediction(
+                        ts=ts,
+                        engine_id=data["engine_id"],
+                        model_version_id=AUX_MODEL_VERSION_ID,
+                        failure_status=aux_result["failure_status"],
+                        risk_level=aux_result["risk_level"],
+                        failure_probability_pct=aux_result["failure_probability_pct"],
+                        detected_failure_types=aux_result["detected_failure_types"],
+                        primary_failure_cause=aux_result["primary_failure_cause"],
+                        recommended_action=aux_result["recommended_action"]
+                    )
+                    session.add(aux_pred)
+                    await session.commit()
+                
+                await ws_manager.broadcast_to_engine(engine_id, {
+                    "type": "aux_prediction",
+                    "payload": aux_payload
+                })
+        except Exception:
+            logger.exception("Failed to process Aux prediction")
 
     # ── Lifecycle ────────────────────────────────────────────────────
     def _parse_broker_url(self) -> tuple[str, int]:

@@ -39,7 +39,12 @@ class AuxPrediction(BaseModel):
     ts: datetime
     engine_id: UUID
     model_version_id: UUID
-    aux_score: float
+    failure_status: str
+    risk_level: str
+    failure_probability_pct: float
+    detected_failure_types: list[dict]
+    primary_failure_cause: Optional[str]
+    recommended_action: Optional[str]
     
     class Config:
         from_attributes = True

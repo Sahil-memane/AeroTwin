@@ -1,0 +1,143 @@
+{
+    "selected_best_model": "Random_Forest_Balanced",
+    "model_comparison": {
+        "Random_Forest_Balanced": {
+            "model_family": "RandomForestClassifier",
+            "use_smote": false,
+            "cv_accuracy_mean": 0.9887499999999999,
+            "cv_accuracy_std": 0.0018957188610128765,
+            "cv_f1_mean": 0.8288601549516809,
+            "test_accuracy": 0.989,
+            "test_precision": 0.859375,
+            "test_recall": 0.8088235294117647,
+            "test_f1": 0.8333333333333334,
+            "test_roc_auc": 0.9691039459261966,
+            "test_pr_auc": 0.8667356812196916,
+            "confusion_matrix": [
+                [
+                    1923,
+                    9
+                ],
+                [
+                    13,
+                    55
+                ]
+            ]
+        },
+        "Random_Forest_SMOTE": {
+            "model_family": "RandomForestClassifier",
+            "use_smote": true,
+            "cv_accuracy_mean": 0.9717294879805871,
+            "cv_accuracy_std": 0.003130126434360754,
+            "cv_f1_mean": 0.97163868136538,
+            "test_accuracy": 0.9725,
+            "test_precision": 0.5643564356435643,
+            "test_recall": 0.8382352941176471,
+            "test_f1": 0.6745562130177515,
+            "test_roc_auc": 0.969842284739983,
+            "test_pr_auc": 0.8291061081952796,
+            "confusion_matrix": [
+                [
+                    1888,
+                    44
+                ],
+                [
+                    11,
+                    57
+                ]
+            ]
+        },
+        "Extra_Trees_SMOTE": {
+            "model_family": "ExtraTreesClassifier",
+            "use_smote": true,
+            "cv_accuracy_mean": 0.9741883647513145,
+            "cv_accuracy_std": 0.002660385362179073,
+            "cv_f1_mean": 0.9742034794646617,
+            "test_accuracy": 0.968,
+            "test_precision": 0.52,
+            "test_recall": 0.7647058823529411,
+            "test_f1": 0.6190476190476191,
+            "test_roc_auc": 0.9675968213372306,
+            "test_pr_auc": 0.7644188545614479,
+            "confusion_matrix": [
+                [
+                    1884,
+                    48
+                ],
+                [
+                    16,
+                    52
+                ]
+            ]
+        },
+        "XGBoost_SMOTE": {
+            "model_family": "XGBClassifier",
+            "use_smote": true,
+            "cv_accuracy_mean": 0.9723119493517673,
+            "cv_accuracy_std": 0.001289883170744386,
+            "cv_f1_mean": 0.9722006470633531,
+            "test_accuracy": 0.972,
+            "test_precision": 0.5612244897959183,
+            "test_recall": 0.8088235294117647,
+            "test_f1": 0.6626506024096386,
+            "test_roc_auc": 0.97224759469005,
+            "test_pr_auc": 0.8478041737170477,
+            "confusion_matrix": [
+                [
+                    1889,
+                    43
+                ],
+                [
+                    13,
+                    55
+                ]
+            ]
+        },
+        "LightGBM_SMOTE": {
+            "model_family": "LGBMClassifier",
+            "use_smote": true,
+            "cv_accuracy_mean": 0.9897141389913461,
+            "cv_accuracy_std": 0.0012334825253555277,
+            "cv_f1_mean": 0.9897143085667779,
+            "test_accuracy": 0.9855,
+            "test_precision": 0.76,
+            "test_recall": 0.8382352941176471,
+            "test_f1": 0.7972027972027972,
+            "test_roc_auc": 0.9770734380708805,
+            "test_pr_auc": 0.8778779213864983,
+            "confusion_matrix": [
+                [
+                    1914,
+                    18
+                ],
+                [
+                    11,
+                    57
+                ]
+            ]
+        },
+        "Stacking_Ensemble": {
+            "model_family": "StackingClassifier",
+            "use_smote": true,
+            "cv_accuracy_mean": 0.987061736217864,
+            "cv_accuracy_std": 0.0020958584342781737,
+            "cv_f1_mean": 0.9870703565739147,
+            "test_accuracy": 0.9825,
+            "test_precision": 0.7037037037037037,
+            "test_recall": 0.8382352941176471,
+            "test_f1": 0.7651006711409396,
+            "test_roc_auc": 0.968966934599927,
+            "test_pr_auc": 0.8584741632178351,
+            "confusion_matrix": [
+                [
+                    1908,
+                    24
+                ],
+                [
+                    11,
+                    57
+                ]
+            ]
+        }
+    }
+}
