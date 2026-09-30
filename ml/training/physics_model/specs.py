@@ -11,7 +11,7 @@ Sources:
   - Standard Otto-cycle thermodynamic references
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

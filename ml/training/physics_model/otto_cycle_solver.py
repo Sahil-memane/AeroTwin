@@ -161,18 +161,15 @@ class OttoCycleSolver:
 
         # ── State 1: Induction ───────────────────────────────────────
         T1 = T_amb + s.manifold_heat_rise           # [K]
-        P1 = P_amb * s.eta_volumetric * throttle_eff  # [Pa]
 
         # ── State 2: Isentropic compression ──────────────────────────
         r = s.compression_ratio
         g = s.gamma
         T2 = T1 * r ** (g - 1.0)
-        P2 = P1 * r ** g
 
         # ── State 3: Constant-volume heat addition ───────────────────
         Q_in_per_kg = (m_dot_fuel * s.LHV * s.eta_combustion) / max(m_dot_air + m_dot_fuel, 1e-9)
         T3 = T2 + Q_in_per_kg / s.cv
-        P3 = P2 * (T3 / T2)
 
         # ── State 4: Isentropic expansion ────────────────────────────
         T4 = T3 * (1.0 / r) ** (g - 1.0)
@@ -275,6 +272,22 @@ def compute_expected_telemetry(
     )
 
 
+# One-sigma tolerance band per channel — used both to normalise
+# `deviation_score` below and (Accuracy-First Phase 4) by
+# backend/app/services/physics_ingestion.py to classify each channel's
+# own CONSISTENT/ELEVATED/REVIEW/ANOMALY status. Exposed as a module-
+# level constant (rather than kept as function-local variables) purely
+# so that second consumer has one real source of truth instead of a
+# second, independently-maintained copy of the same numbers.
+PARAMETER_TOLERANCES = {
+    "cht": 15.0,            # °C
+    "egt": 40.0,            # °C
+    "oil_pressure": 10.0,   # psi
+    "oil_temp": 12.0,       # °C
+    "fuel_flow": 2.0,       # gal/h
+}
+
+
 def compute_physics_deviation(
     actual_telemetry: dict,
     operating_conditions: Optional[dict] = None,
@@ -326,18 +339,12 @@ def compute_physics_deviation(
     # Normalise each delta by a plausible "one-sigma" tolerance band,
     # then take the RMS.  Score > 1.0 means at least one channel has
     # exceeded its expected tolerance.
-    CHT_TOLERANCE = 15.0    # °C
-    EGT_TOLERANCE = 40.0    # °C
-    OIL_P_TOLERANCE = 10.0  # psi
-    OIL_T_TOLERANCE = 12.0  # °C
-    FF_TOLERANCE = 2.0      # gal/h
-
     normalised = [
-        (delta_cht / CHT_TOLERANCE) ** 2,
-        (delta_egt / EGT_TOLERANCE) ** 2,
-        (delta_oil_pressure / OIL_P_TOLERANCE) ** 2,
-        (delta_oil_temp / OIL_T_TOLERANCE) ** 2,
-        (delta_fuel_flow / FF_TOLERANCE) ** 2,
+        (delta_cht / PARAMETER_TOLERANCES["cht"]) ** 2,
+        (delta_egt / PARAMETER_TOLERANCES["egt"]) ** 2,
+        (delta_oil_pressure / PARAMETER_TOLERANCES["oil_pressure"]) ** 2,
+        (delta_oil_temp / PARAMETER_TOLERANCES["oil_temp"]) ** 2,
+        (delta_fuel_flow / PARAMETER_TOLERANCES["fuel_flow"]) ** 2,
     ]
     deviation_score = math.sqrt(sum(normalised) / len(normalised))
 
