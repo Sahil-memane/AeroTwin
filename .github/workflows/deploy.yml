@@ -1,0 +1,111 @@
+name: deploy
+
+# Runs only after the `ci` workflow succeeded on main (never on a red build).
+# Builds the two images, pushes them to GitHub Container Registry, then pings
+# the hosting platform's deploy hook(s) and smoke-tests /healthz.
+#
+# One-time setup (Settings -> Secrets and variables -> Actions):
+#   Variables:  PROD_API_URL   e.g. https://api.example.com/api/v1
+#               PROD_WS_URL    e.g. wss://api.example.com/api/v1
+#               PROD_HEALTHZ_URL  (optional) e.g. https://api.example.com/healthz
+#   Secrets:    BACKEND_DEPLOY_HOOK   (optional) platform deploy-hook URL (Render/Railway/...)
+#               FRONTEND_DEPLOY_HOOK  (optional)
+# The backend container must be configured on the platform with ENVIRONMENT=production,
+# a strong JWT_SECRET (>=32 chars), EDGE_API_KEY (>=16), CORS_ORIGINS=<frontend origin>
+# and DATABASE_URL/MQTT_BROKER_URL/REDIS_URL — the app refuses to start otherwise.
+# See docs/DEPLOYMENT.md.
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Require production URLs for the frontend bundle
+        run: |
+          test -n "${{ vars.PROD_API_URL }}" || { echo "::error::Set the PROD_API_URL repository variable"; exit 1; }
+          test -n "${{ vars.PROD_WS_URL }}"  || { echo "::error::Set the PROD_WS_URL repository variable"; exit 1; }
+
+      - name: Lowercase image namespace
+        run: echo "IMAGE_NS=${REGISTRY}/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .                      # repo root: image needs backend/, ml/ and simulation/
+          file: infra/docker/Dockerfile.backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NS }}/backend:latest
+            ${{ env.IMAGE_NS }}/backend:${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: infra/docker/Dockerfile.frontend
+          push: true
+          build-args: |
+            VITE_API_URL=${{ vars.PROD_API_URL }}
+            VITE_WS_URL=${{ vars.PROD_WS_URL }}
+          tags: |
+            ${{ env.IMAGE_NS }}/frontend:latest
+            ${{ env.IMAGE_NS }}/frontend:${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  release:
+    needs: images
+    runs-on: ubuntu-latest
+    environment: production        # add required reviewers here for a manual approval gate
+    steps:
+      - name: Trigger backend deploy
+        env:
+          HOOK: ${{ secrets.BACKEND_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -fsS -X POST "$HOOK" && echo "backend deploy triggered"; else echo "BACKEND_DEPLOY_HOOK not set — skipped (pull the image manually)"; fi
+
+      - name: Trigger frontend deploy
+        env:
+          HOOK: ${{ secrets.FRONTEND_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -fsS -X POST "$HOOK" && echo "frontend deploy triggered"; else echo "FRONTEND_DEPLOY_HOOK not set — skipped"; fi
+
+      - name: Smoke test /healthz
+        env:
+          URL: ${{ vars.PROD_HEALTHZ_URL }}
+        run: |
+          if [ -z "$URL" ]; then echo "PROD_HEALTHZ_URL not set — skipped"; exit 0; fi
+          # Free-tier hosts cold-start slowly and the image loads 4 ML models lazily.
+          curl -fsS --retry 12 --retry-delay 20 --retry-all-errors "$URL"

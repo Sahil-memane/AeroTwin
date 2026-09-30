@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.coverage
+htmlcov/
 
 # Environments
 .env
@@ -35,3 +37,15 @@ ml/models/*.onnx
 # OS
 .DS_Store
 Thumbs.db
+
+# Local runtime / generated artefacts (never commit)
+*.sqlite3
+# ...except the Copilot's vector store, which ships with the app
+!backend/AeroTwin_Rag/ChromaDB_AeroTwin/chroma.sqlite3
+edge/inference/edge_outbox.sqlite3
+frontend/tsconfig.tsbuildinfo
+frontend/*.tsbuildinfo
+scripts/load_test/engine_ids.json
+scripts/load_test/loadtest_results_*.csv
+.pytest_cache/
+.ruff_cache/

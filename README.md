@@ -14,7 +14,53 @@ AeroTwin is a complete, real-time digital twin system designed to ingest, proces
 - [API Documentation](docs/api/openapi.yaml)
 
 ## Quick Start
-*Instructions for setting up the backend, frontend, and ML environments will be populated here as Phase 1 progresses.*
+
+Prerequisites: Docker, Python 3.12, Node 20.
+
+```bash
+# 1. Infrastructure (TimescaleDB :5433, Redis :6379, Mosquitto :1883)
+docker compose -f infra/docker/docker-compose.yml up -d db redis mqtt
+
+# 2. Backend  (http://127.0.0.1:8000, docs at /docs)
+cd backend
+python -m venv .venv && .venv/Scripts/activate        # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt -r requirements-ml.txt -r AeroTwin_Rag/requirements.txt
+cp .env.example .env                                   # then edit secrets / DB URL
+alembic upgrade head
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# 3. Frontend  (http://127.0.0.1:5173)
+cd ../frontend
+cp .env.example .env
+npm ci && npm run dev
+
+# 4. Feed it data (telemetry simulator; f/o/v/c keys inject faults)
+python edge/telemetry_publisher/simulate.py
+```
+
+Or run everything in containers: `docker compose -f infra/docker/docker-compose.yml up --build`.
+
+### Tests and checks
+
+| What | Command |
+|---|---|
+| Backend (needs the DB from step 1) | `cd backend && pytest` |
+| ML physics model | `pytest ml/tests` |
+| Frontend unit/UI tests | `cd frontend && npm test` |
+| Frontend typecheck + build | `cd frontend && npm run build` |
+| Lint | `ruff check --config backend/ruff.toml backend/app backend/tests ml` and `cd frontend && npm run lint` |
+| End-to-end (needs the running stack) | see [scripts/e2e/README.md](scripts/e2e/README.md) |
+
+### Main features
+
+- Live telemetry ingest (MQTT + REST) → Fault / RUL / Bearing / Auxiliary models → Health Fusion → alerts, streamed over WebSocket.
+- Mission Replay, preset mission simulation, and the **parameter What-If** (change RPM/CHT/EGT/oil/fuel and see how the real models respond — read-only, never touches live state).
+- GARUDA Copilot (RAG) for explaining health, RUL and alerts.
+- Edge agent (ONNX Fault + RUL, offline buffering) in [`edge/`](edge/README.md).
+
+### Deploying
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — required environment, GitHub setup, and the limits to know before going live.
 
 ## License
 [MIT License](LICENSE)

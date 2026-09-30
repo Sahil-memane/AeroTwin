@@ -1,0 +1,103 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/aerotwin
+  JWT_SECRET: ci-test-secret-not-for-production
+  EDGE_API_KEY: ci-test-edge-key
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check --config backend/ruff.toml backend/app backend/tests ml
+      - name: Frontend lint (once frontend exists)
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          cd frontend
+          npm ci
+          npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          cd backend
+          pip install -r requirements.txt -r requirements-ml.txt mypy
+      # Non-blocking: this codebase uses SQLAlchemy's classic Column()
+      # declarative style, which produces `Column[T]` vs `T` false
+      # positives under mypy without the (no-longer-shipped-for-this-style)
+      # sqlalchemy mypy plugin. Reported for visibility, not a merge gate,
+      # until the ORM layer moves to Mapped[] typing.
+      - run: cd backend && mypy app --config-file mypy.ini
+        continue-on-error: true
+      - name: Frontend type-check (once frontend exists)
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          cd frontend
+          npm ci
+          npx tsc --noEmit
+
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aerotwin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          cd backend
+          pip install -r requirements.txt -r requirements-ml.txt pytest-cov
+      - name: Alembic migration check (fails on model/migration drift)
+        run: |
+          cd backend
+          alembic upgrade head
+          alembic check
+      - name: Run tests
+        run: |
+          cd backend
+          pytest --cov=app/api/v1 --cov-fail-under=70
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    if: hashFiles('frontend/package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: cd frontend && npm ci
+      - run: cd frontend && npm test
+      - name: Production build (typecheck + bundle)
+        run: cd frontend && npm run build
+        env:
+          VITE_API_URL: http://localhost:8000/api/v1
+          VITE_WS_URL: ws://localhost:8000/api/v1
