@@ -1,0 +1,16 @@
+# Deliberately narrow rule set for CI: catches real bugs (undefined
+# names, unused imports, fatal syntax errors) without forcing a full
+# style rewrite of a codebase that predates this CI setup. Broaden this
+# once the backend has a dedicated cleanup pass.
+line-length = 120
+
+[lint]
+select = ["E9", "F"]
+
+[lint.per-file-ignores]
+# app/models/__init__.py and app/schemas/__init__.py deliberately re-export
+# every module's contents as a barrel module (`from .x import *`), which
+# ruff can't verify names through — that's the intended pattern here, not
+# an oversight.
+"**/app/models/__init__.py" = ["F401", "F403"]
+"**/app/schemas/__init__.py" = ["F401", "F403"]

@@ -1,11 +1,28 @@
 import math
 import numpy as np
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class AuxAdapter:
     def __init__(self):
         # engine_id -> accumulated wear
         self._wear_state: Dict[str, float] = {}
+
+    @staticmethod
+    def wear_increment(rpm: float) -> float:
+        """Wear (minutes) added by one reading at `rpm` — the single
+        definition used by telemetry_to_raw_features and by the What-If
+        scenario engine, so the two can never drift."""
+        return (rpm / 3000.0) * (0.5 / 60.0) if rpm > 0 else 0
+
+    def get_wear(self, engine_id: str) -> Optional[float]:
+        """Accumulated wear for `engine_id`, or None if no state exists."""
+        return self._wear_state.get(engine_id)
+
+    def set_wear(self, engine_id: str, value: float) -> None:
+        self._wear_state[engine_id] = value
+
+    def reset_engine(self, engine_id: str) -> None:
+        self._wear_state.pop(engine_id, None)
 
     def telemetry_to_raw_features(self, engine_id: str, telemetry: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -18,7 +35,7 @@ class AuxAdapter:
         # In a real scenario, this would come from the database or RUL state
         current_wear = self._wear_state.get(engine_id, 0.0)
         # Increase wear proportionally to RPM to simulate load
-        wear_increment = (rpm / 3000.0) * (0.5 / 60.0) if rpm > 0 else 0
+        wear_increment = self.wear_increment(rpm)
         current_wear += wear_increment
         self._wear_state[engine_id] = current_wear
         

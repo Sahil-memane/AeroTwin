@@ -11,4 +11,5 @@ class MaintenanceLog(Base):
     engine_id = Column(UUID(as_uuid=True), ForeignKey('engines.id'), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     logged_at = Column(DateTime, server_default=func.now())
-    notes = Column(String, nullable=False)
+    action_taken = Column(String, nullable=False)
+    notes = Column(String, nullable=True)

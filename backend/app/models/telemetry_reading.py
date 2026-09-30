@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, DateTime, Float
+from sqlalchemy import Column, ForeignKey, DateTime, Float, String
 from sqlalchemy.dialects.postgresql import UUID
 from app.db.base import Base
 
@@ -19,3 +19,17 @@ class TelemetryReading(Base):
     vibration_x = Column(Float, nullable=True)
     vibration_y = Column(Float, nullable=True)
     vibration_z = Column(Float, nullable=True)
+
+    # Operating conditions the RUL adapter and physics baseline use when the
+    # source provides them (the simulator/edge agent do). NULL for rows
+    # written before these columns existed, and for sources that don't send
+    # them — consumers must then fall back exactly as live ingestion does
+    # for a payload without them (never an invented value).
+    throttle = Column(Float, nullable=True)
+    altitude_m = Column(Float, nullable=True)
+
+    # Accuracy-First Phase 1 — the validate_payload() classification this
+    # reading received (VALID/STALE/SUSPICIOUS) at ingest time. NULL for
+    # every row written before this column existed — treat NULL as
+    # "unknown," not as VALID, when reading historical data.
+    quality_status = Column(String, nullable=True)

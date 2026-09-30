@@ -32,6 +32,7 @@ from training.physics_model import (  # noqa: E402
     OttoCycleSolver,
     ExpectedTelemetry,
     PhysicsDeviation,
+    PARAMETER_TOLERANCES,
     compute_expected_telemetry,
     compute_physics_deviation,
     EngineSpecs,
@@ -42,6 +43,7 @@ __all__ = [
     "OttoCycleSolver",
     "ExpectedTelemetry",
     "PhysicsDeviation",
+    "PARAMETER_TOLERANCES",
     "compute_expected_telemetry",
     "compute_physics_deviation",
     "compute_deviation_from_reading",
@@ -78,20 +80,26 @@ def compute_deviation_from_reading(
     -------
     PhysicsDeviation
     """
-    actual = {
-        "rpm": reading["rpm"],
-        "cht": reading["cht"],
-        "egt": reading["egt"],
-        "oil_pressure": reading["oil_pressure"],
-        "oil_temp": reading["oil_temp"],
-        "fuel_flow": reading["fuel_flow"],
-    }
-
-    ops: dict = {"rpm": reading["rpm"]}
+    # Pass the WHOLE reading through as `actual_telemetry` — not a
+    # hand-copied subset — so compute_physics_deviation's own
+    # operating-conditions inference (`actual_telemetry.get("throttle",
+    # ...)`, `.get("altitude_m", ...)`, etc.) sees the reading's REAL
+    # throttle/altitude_m/ambient_temp_c/airspeed_mps when present,
+    # instead of silently falling back to an RPM-estimated throttle.
+    # [Fixed here, Accuracy-First Phase 4: this wrapper previously built
+    # a narrow `actual` dict containing only the 6 measured channels,
+    # which discarded the reading's own throttle/altitude_m even when
+    # they existed — confirmed live, this made every non-explicit-
+    # throttle call estimate throttle from RPM rather than use the real
+    # telemetry field the simulator already emits.] Extra keys (ts,
+    # engine_id, …) are harmless — compute_physics_deviation only reads
+    # the specific fields it needs.
+    actual = dict(reading)
     if throttle is not None:
-        ops["throttle"] = throttle
-    ops["altitude_m"] = altitude_m
+        actual["throttle"] = throttle
+    if altitude_m:
+        actual["altitude_m"] = altitude_m
     if ambient_temp_c is not None:
-        ops["ambient_temp_c"] = ambient_temp_c
+        actual["ambient_temp_c"] = ambient_temp_c
 
-    return compute_physics_deviation(actual, ops if throttle is not None else None)
+    return compute_physics_deviation(actual)

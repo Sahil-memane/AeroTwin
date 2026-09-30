@@ -1,0 +1,7 @@
+[run]
+; SQLAlchemy's async engine bridges to its sync core via greenlet_spawn()
+; for every `await db.execute()`/`await db.commit()`. Without this,
+; coverage.py's tracer doesn't follow execution into those greenlets,
+; so almost every line after the first DB call in a request handler
+; is wrongly reported as "not covered" even when the test exercises it.
+concurrency = greenlet
