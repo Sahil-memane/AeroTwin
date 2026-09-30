@@ -3,10 +3,14 @@ import joblib
 import json
 import logging
 import collections
+from pathlib import Path
 import numpy as np
-from typing import Optional, Dict
+import yaml
+from typing import Optional
 
-from app.services.fault_adapter import piston_to_uav_telemetry, extract_window_features
+from app.services.fault_adapter import piston_to_uav_telemetry, extract_window_features, input_coverage
+from app.services.fault_reliability import is_reliable
+from app.services.fault_state import fault_state_machine
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +25,17 @@ FAULT_CLASSES = {
     6: "Barometer Failure"
 }
 
+# Accuracy-First Phase 3: an explicit, distinguishable label for "the
+# model didn't have enough evidence to pick a class" — never presented
+# as if it were a real, confident classification.
+UNCERTAIN_LABEL = "Unknown / insufficient evidence"
+
+_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config" / "telemetry_limits.yaml"
+with open(_CONFIG_PATH, encoding="utf-8") as _f:
+    _FAULT_CONFIG = yaml.safe_load(_f)["fault_detection"]
+STAGE2_CONFIDENCE_THRESHOLD: float = _FAULT_CONFIG["stage2_confidence_threshold"]
+STAGE2_MARGIN_THRESHOLD: float = _FAULT_CONFIG["stage2_margin_threshold"]
+
 class FaultService:
     def __init__(self, window_len: int = 80):
         self._window_len = window_len
@@ -33,6 +48,11 @@ class FaultService:
         self._stage1_model = None
         self._stage2_model = None
         self._feature_names = []
+
+    @property
+    def window_len(self) -> int:
+        """Readings required before the first inference."""
+        return self._window_len
 
     def _ensure_loaded(self):
         if self._loaded:
@@ -54,6 +74,11 @@ class FaultService:
             logger.error(f"Failed to load Fault Model: {e}")
             # Mock mode if models missing
             self._loaded = True
+
+    @staticmethod
+    def _coverage_fields() -> dict:
+        cov = input_coverage()
+        return {"input_coverage": cov, "reliable": is_reliable(cov)}
 
     def push_reading(self, engine_id: str, raw_telemetry: dict) -> Optional[dict]:
         """
@@ -86,12 +111,18 @@ class FaultService:
         
         # 4. Inference
         if self._stage1_model is None or self._stage2_model is None:
-            # Fallback mock if models failed to load
+            # Fallback mock if models failed to load. `state` is included
+            # only for return-shape parity with the real inference path
+            # below (ingestion.py reads it unconditionally) — it does not
+            # pass through the state machine, since there's no real
+            # per-cycle classification to track a streak for.
             return {
                 "class_id": 0,
                 "fault_class": "No Failure",
                 "confidence": 0.99,
-                "probabilities": [0.99, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                "probabilities": [0.99, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "state": "NORMAL",
+                **self._coverage_fields(),
             }
             
         # Stage 1: Binary Detection
@@ -102,33 +133,70 @@ class FaultService:
             probs = self._stage1_model.predict_proba(features)[0]
             conf = float(probs[0])
             full_probs = [conf, 1-conf, 0.0, 0.0, 0.0, 0.0, 0.0]
+            state = fault_state_machine.update(engine_id, is_abnormal=False)
             return {
                 "class_id": 0,
                 "fault_class": "No Failure",
                 "confidence": conf,
-                "probabilities": full_probs
+                "probabilities": full_probs,
+                "state": state.value,
+                **self._coverage_fields(),
             }
-            
+
         # Stage 2: Multiclass Isolation
         s2_probs = self._stage2_model.predict_proba(features)[0]
         s2_class = self._stage2_model.predict(features)[0]
-        
+
         # Construct full 7-element probability vector
         # Note: the stage2 model was trained on labels 1-6, but predict_proba returns 6 elements
         full_probs = [0.0] + [float(p) for p in s2_probs]
         conf = float(np.max(s2_probs))
         class_id = int(s2_class)
-        
+
         # Safety fallback if class_id out of bounds
         if class_id not in FAULT_CLASSES:
             class_id = 0
-            
+
+        # Accuracy-First Phase 3: abstain rather than force a
+        # falsely-confident single class when the evidence is weak —
+        # either the top probability itself is low, or it's not clearly
+        # separated from the runner-up (a near-tie is exactly the case
+        # where picking the argmax is most likely to be wrong).
+        sorted_probs = sorted((float(p) for p in s2_probs), reverse=True)
+        margin = sorted_probs[0] - (sorted_probs[1] if len(sorted_probs) > 1 else 0.0)
+        abstained = conf < STAGE2_CONFIDENCE_THRESHOLD or margin < STAGE2_MARGIN_THRESHOLD
+
+        # The state machine tracks whether THIS cycle's classification is
+        # abnormal — an abstention is neither (it carries the current
+        # state over unchanged), a real fault class is.
+        state = fault_state_machine.update(engine_id, is_abnormal=None if abstained else True)
+
+        if abstained:
+            return {
+                "class_id": class_id,
+                "fault_class": UNCERTAIN_LABEL,
+                "confidence": conf,
+                "probabilities": full_probs,
+                "state": state.value,
+                **self._coverage_fields(),
+            }
+
         return {
             "class_id": class_id,
             "fault_class": FAULT_CLASSES[class_id],
             "confidence": conf,
-            "probabilities": full_probs
+            "probabilities": full_probs,
+            "state": state.value,
+            **self._coverage_fields(),
         }
+
+    def reset_engine(self, engine_id: str) -> None:
+        """Frees per-engine window/state — used by the replay engine
+        (each simulation run gets its own pseudo engine_id and is one-shot),
+        matching rul_service.reset_engine's lifecycle."""
+        self._windows.pop(engine_id, None)
+        self._prev_vibes.pop(engine_id, None)
+        fault_state_machine.reset_engine(engine_id)
 
 # Global singleton instance
 fault_service = FaultService()

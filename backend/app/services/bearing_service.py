@@ -21,7 +21,7 @@ Model artifacts (all from ml/training/bearing_model/):
 import os
 import json
 import logging
-from typing import Optional, Dict, Any
+from typing import Dict, Any, Optional
 
 import numpy as np
 
@@ -108,13 +108,17 @@ class BearingService:
         self._loaded = True
 
     # ── Inference ─────────────────────────────────────────────────────
-    def push_reading(self, engine_id: str, raw_telemetry: Dict[str, Any]) -> Dict[str, Any]:
+    def push_reading(
+        self, engine_id: str, raw_telemetry: Dict[str, Any], seed: Optional[int] = None
+    ) -> Dict[str, Any]:
         """
         Run one bearing health prediction from a single telemetry packet.
 
         Args:
             engine_id:     UUID string for the engine.
             raw_telemetry: dict from MQTT (contains vibration_magnitude, rpm, etc.)
+            seed:          optional synthetic-vibration RNG seed (What-If determinism);
+                           None = original unseeded behavior.
 
         Returns:
             dict with keys: class_id, class_label, fault_location,
@@ -133,7 +137,7 @@ class BearingService:
         # ── Real inference ────────────────────────────────────────────
         try:
             # 1. Synthesise + preprocess → (1, 32, 32, 1)
-            matrix = preprocess_to_matrix(vib_mag, rpm, fault_hint)
+            matrix = preprocess_to_matrix(vib_mag, rpm, fault_hint, seed)
 
             # 2. CNN forward pass
             probs_raw = self._model.predict(matrix, verbose=0)[0]   # shape (10,)

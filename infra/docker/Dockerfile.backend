@@ -1,3 +1,18 @@
+# Backend image. BUILD CONTEXT IS THE REPO ROOT (not backend/):
+#
+#   docker build -f infra/docker/Dockerfile.backend .
+#
+# The backend imports two packages that live beside it in the repo, not
+# inside backend/ — the trained model artifacts (ml/training/...) and the
+# simulation package (simulation/...). docker-compose hides that by
+# bind-mounting them, but a standalone image built from backend/ alone would
+# boot and then fail on the first inference / what-if. Layout inside the
+# image mirrors the repo so the code's relative paths resolve unchanged:
+#
+#   /app         <- backend/
+#   /ml          <- ml/training (model artifacts + physics model)
+#   /simulation  <- simulation/
+
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -7,17 +22,39 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
+# pip's default per-read socket timeout (15s) is shorter than a single
+# slow chunk can take on a constrained network — tensorflow's wheel alone
+# is ~570MB. Bumping the timeout (and retry count) fixes spurious
+# `ReadTimeoutError`s on an otherwise-fine, just-slow connection; it has
+# no effect at all on a fast one.
+ENV PIP_DEFAULT_TIMEOUT=180
+ENV PIP_RETRIES=10
+
 # Install ML dependencies (heavy, cached separately)
-COPY requirements-ml.txt .
+COPY backend/requirements-ml.txt .
 RUN pip install --no-cache-dir -r requirements-ml.txt
 
 # Install app dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Install the AI Copilot's RAG dependencies (langchain/chromadb/genai) —
+# a separate requirements file since AeroTwin_Rag/ is developed somewhat
+# independently, but it must still be installed here: the COPY below
+# brings in copilot_engine.py's *code*, not the packages it imports.
+COPY backend/AeroTwin_Rag/requirements.txt ./AeroTwin_Rag/requirements.txt
+RUN pip install --no-cache-dir -r AeroTwin_Rag/requirements.txt
+
+# Application code + the sibling packages it loads at runtime
+# (.dockerignore keeps datasets, plots, tests and .env out of the image).
+COPY backend/ /app/
+COPY ml/training /ml/training
+COPY simulation /simulation
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Runs migrations before serving — a fresh deployment's database has no
+# tables yet, and a plain `uvicorn` CMD would start successfully while
+# every request 500s on a missing table. See entrypoint.sh.
+CMD ["./entrypoint.sh"]

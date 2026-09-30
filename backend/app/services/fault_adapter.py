@@ -1,5 +1,4 @@
 import numpy as np
-import collections
 from scipy.stats import skew, kurtosis
 
 # The 32 channels in exact order
@@ -16,6 +15,27 @@ CHANNELS = [
     "VIBE_VibeX", "VIBE_VibeY", "VIBE_VibeZ",
     "MAV_rxp", "MAV_txp"
 ]
+
+# Channels the piston adapter below does NOT drive from telemetry — it writes a
+# fixed constant into them on every reading (attitude, EKF, GPS, magnetometer,
+# MAVLink radio stats). A real UAV feed would vary these; a piston engine has
+# no such sensors. Kept in sync with piston_to_uav_telemetry (a test asserts
+# these are exactly the constant columns).
+PLACEHOLDER_CHANNELS = (
+    "ATT_Roll", "ATT_Pitch", "ATT_Yaw", "ATT_ErrRP", "ATT_ErrYaw",
+    "XKF1_Roll", "XKF1_Pitch", "XKF1_Yaw",
+    "GPS_NSats", "GPS_HDop", "GPS_Spd", "GPS_Alt",
+    "MAG_MagX", "MAG_MagY", "MAG_MagZ",
+    "MAV_rxp", "MAV_txp",
+)
+
+
+def input_coverage() -> float:
+    """Share of the model's 32 input channels driven by measured telemetry
+    (the rest are fixed placeholders). Structural for this adapter: it does
+    not depend on the values in any particular reading."""
+    return (len(CHANNELS) - len(PLACEHOLDER_CHANNELS)) / len(CHANNELS)
+
 
 def piston_to_uav_telemetry(data: dict, prev_vibe: dict = None) -> np.ndarray:
     """

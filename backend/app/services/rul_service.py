@@ -101,8 +101,15 @@ class RULInferenceService:
             self._xgb_model.load_model(
                 os.path.join(self._model_dir, "xgb_rul_model.json")
             )
+            # The booster was trained on named, ordered columns (e.g.
+            # "setting_1_mean", ...). DMatrix must carry the same names in
+            # the same order or xgboost 2.x's feature-name validation
+            # rejects the predict call — read them back from the model
+            # itself rather than re-deriving, so this can never drift.
+            self._trained_feature_names = self._xgb_model.feature_names
         else:
             self._xgb_model = None
+            self._trained_feature_names = None
 
         self._loaded = True
         logger.info("RUL model artifacts loaded from %s (Mock Mode: %s)", self._model_dir, not self._has_xgboost)
@@ -115,10 +122,10 @@ class RULInferenceService:
 
     def _extract_window_features(self, window: np.ndarray) -> np.ndarray:
         """
-        Extract 9 statistical features per column from the sliding window.
-
-        For each of the 24 columns, compute:
-          mean, std, slope, last5_mean, last, first_last, max, min, range
+        Extract 9 statistical features per column from the sliding window,
+        in the exact order the model was trained on: mean, std, last, min,
+        max, slope, range, first_last, last5_mean (per trained booster's
+        ``feature_names``, e.g. "setting_1_mean", "setting_1_std", ...).
 
         Returns a flat array of 24 × 9 = 216 features.
         """
@@ -148,8 +155,8 @@ class RULInferenceService:
             col_range = col_max - col_min
 
             features.extend([
-                col_mean, col_std, slope, last5_mean,
-                last_val, first_last, col_max, col_min, col_range,
+                col_mean, col_std, last_val, col_min, col_max,
+                slope, col_range, first_last, last5_mean,
             ])
 
         return np.array(features, dtype=np.float64)
@@ -202,9 +209,12 @@ class RULInferenceService:
         Returns
         -------
         dict | None
-            ``None`` if the window is not yet full.
+            ``None`` if the window is not yet full (INSUFFICIENT_DATA —
+            see ``get_window_depth`` for progress; no row should be
+            written for this case, not even a placeholder one).
             Otherwise: ``{"rul_cycles": float, "rul_lower": float,
-                          "rul_upper": float, "degradation_index": float}``
+                          "rul_upper": float, "degradation_index": float,
+                          "status": "VALID" | "MODEL_ERROR"}``
         """
         self._ensure_loaded()
 
@@ -231,12 +241,20 @@ class RULInferenceService:
             import xgboost as xgb
             window_array = np.array(window)  # shape: (window_len, 24)
             features = self._extract_window_features(window_array)
-            dmat = xgb.DMatrix(features.reshape(1, -1))
+            dmat = xgb.DMatrix(
+                features.reshape(1, -1),
+                feature_names=self._trained_feature_names,
+            )
             raw_pred = float(self._xgb_model.predict(dmat)[0])
+            status = "VALID"
         else:
-            # Mock prediction logic (e.g. returns 100 as a placeholder)
+            # Mock prediction logic (e.g. returns 100 as a placeholder).
+            # This is NOT a real prediction — `status="MODEL_ERROR"` says
+            # so explicitly (Accuracy-First Phase 2) rather than letting
+            # a placeholder 100 cycles look like a genuine assessment.
             logger.warning("Mocking RUL prediction because XGBoost is missing.")
             raw_pred = 100.0
+            status = "MODEL_ERROR"
 
         # Clamp to [0, rul_cap]
         rul_cycles = max(0.0, min(float(self._rul_cap), raw_pred))
@@ -253,11 +271,17 @@ class RULInferenceService:
             "rul_lower": round(rul_lower, 2),
             "rul_upper": round(rul_upper, 2),
             "degradation_index": round(degradation_index, 4),
+            "status": status,
         }
 
     def get_window_depth(self, engine_id: str) -> int:
         """How many cycles are currently buffered for this engine."""
         return len(self._windows.get(engine_id, []))
+
+    @property
+    def window_len(self) -> int:
+        """How many cycles are required before a prediction is made (Accuracy-First Phase 2's `/rul/status` endpoint)."""
+        return self._window_len
 
     def reset_engine(self, engine_id: str):
         """Clear the sliding window for an engine (e.g., new mission)."""

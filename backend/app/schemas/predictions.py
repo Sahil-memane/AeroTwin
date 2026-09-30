@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from uuid import UUID
 from datetime import datetime
 from typing import Optional
+
+from app.services.fault_reliability import is_reliable
 
 class FaultPrediction(BaseModel):
     ts: datetime
@@ -11,7 +13,19 @@ class FaultPrediction(BaseModel):
     fault_class: str
     confidence: float
     probabilities: list[float]
-    
+    # Accuracy-First Phase 3 — temporal-consistency state machine
+    # classification (see app/services/fault_state.py). None on rows
+    # written before this column existed.
+    state: Optional[str] = None
+    # Share of model input channels driven by measured data; None on legacy rows.
+    input_coverage: Optional[float] = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def reliable(self) -> bool:
+        """False => advisory only: excluded from Health Fusion and alerts."""
+        return is_reliable(self.input_coverage)
+
     class Config:
         from_attributes = True
 

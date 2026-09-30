@@ -1,0 +1,2 @@
+locust>=2.46.0
+websockets>=16.0

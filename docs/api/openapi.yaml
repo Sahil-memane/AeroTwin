@@ -1,210 +1,2312 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: AeroTwin API
   version: 1.0.0
-  description: AI-Enabled Real-Time Digital Twin for Aero-Piston Engines in MALE UAVs
-servers:
-  - url: /api/v1
 paths:
-  /auth/login:
+  /api/v1/auth/login:
     post:
+      tags:
+      - auth
       summary: Login
+      description: 'Authenticate a user and return JWT tokens.
+
+        Rate-limited to 5 attempts per minute per IP.'
+      operationId: login_api_v1_auth_login_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
       responses:
         '200':
-          description: Success
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                  refresh_token:
-                    type: string
-                  expires_in:
-                    type: integer
-                  role:
-                    type: string
-  /auth/refresh:
+                $ref: '#/components/schemas/TokenResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/refresh:
     post:
-      summary: Refresh Token
+      tags:
+      - auth
+      summary: Refresh
+      description: Validate a refresh token (rejecting an access token) and issue a new access token.
+      operationId: refresh_api_v1_auth_refresh_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                refresh_token:
-                  type: string
+              $ref: '#/components/schemas/RefreshRequest'
+        required: true
       responses:
         '200':
-          description: Success
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                  expires_in:
-                    type: integer
-  /telemetry/ingest:
-    post:
-      summary: Ingest Telemetry
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/users:
+    get:
+      tags:
+      - users
+      summary: List Users
+      description: List all users. Admin only.
+      operationId: list_users_api_v1_users_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+                title: Response List Users Api V1 Users Get
       security:
-        - ApiKeyAuth: []
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - users
+      summary: Create User
+      description: Create a new user. Admin only.
+      operationId: create_user_api_v1_users_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/{user_id}:
+    get:
+      tags:
+      - users
+      summary: Get User
+      description: Get a single user by ID. Admin only.
+      operationId: get_user_api_v1_users__user_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - users
+      summary: Update User
+      description: Update a user. Admin only.
+      operationId: update_user_api_v1_users__user_id__put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - users
+      summary: Delete User
+      description: Delete a user. Admin only.
+      operationId: delete_user_api_v1_users__user_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uav-assets:
+    get:
+      tags:
+      - uav-assets
+      summary: List Uav Assets
+      description: List all UAV assets. Any authenticated user.
+      operationId: list_uav_assets_api_v1_uav_assets_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/UAVAsset'
+                type: array
+                title: Response List Uav Assets Api V1 Uav Assets Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - uav-assets
+      summary: Create Uav Asset
+      description: Create a new UAV asset. Admin or Program Manager only.
+      operationId: create_uav_asset_api_v1_uav_assets_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVAssetCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAsset'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/uav-assets/{asset_id}:
+    get:
+      tags:
+      - uav-assets
+      summary: Get Uav Asset
+      description: Get a single UAV asset by ID.
+      operationId: get_uav_asset_api_v1_uav_assets__asset_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: asset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Asset Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAsset'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - uav-assets
+      summary: Update Uav Asset
+      description: Update a UAV asset. Admin or Program Manager only.
+      operationId: update_uav_asset_api_v1_uav_assets__asset_id__put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: asset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Asset Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVAssetUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAsset'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - uav-assets
+      summary: Delete Uav Asset
+      description: Delete a UAV asset. Admin only.
+      operationId: delete_uav_asset_api_v1_uav_assets__asset_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: asset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Asset Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines:
+    get:
+      tags:
+      - engines
+      summary: List Engines
+      description: List all engines. Any authenticated user.
+      operationId: list_engines_api_v1_engines_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Engine'
+                type: array
+                title: Response List Engines Api V1 Engines Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - engines
+      summary: Create Engine
+      description: Create a new engine. Admin or Program Manager only.
+      operationId: create_engine_api_v1_engines_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EngineCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engine'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/engines/{engine_id}:
+    get:
+      tags:
+      - engines
+      summary: Get Engine
+      description: Get a single engine by ID.
+      operationId: get_engine_api_v1_engines__engine_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engine'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - engines
+      summary: Update Engine
+      description: Update an engine. Admin, Program Manager, or Maintenance Engineer.
+      operationId: update_engine_api_v1_engines__engine_id__put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EngineUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engine'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - engines
+      summary: Delete Engine
+      description: Delete an engine. Admin only.
+      operationId: delete_engine_api_v1_engines__engine_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/health-score:
+    get:
+      tags:
+      - engines
+      summary: Get Health Score
+      description: 'Get the current fused health score for an engine, plus a recent
+
+        historical trend (computed by `health_fusion.py` on every telemetry
+
+        message and persisted to `health_scores` — see Phase 4).'
+      operationId: get_health_score_api_v1_engines__engine_id__health_score_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      - name: history_limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: History Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/telemetry/latest:
+    get:
+      tags:
+      - engines
+      summary: Get Latest Telemetry
+      description: Get the most recent telemetry reading for an engine.
+      operationId: get_latest_telemetry_api_v1_engines__engine_id__telemetry_latest_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReading'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/rul:
+    get:
+      tags:
+      - engines
+      summary: Get Rul Predictions
+      description: 'Get the most recent RUL predictions for an engine, optionally ranged
+
+        by `from`/`to`. NOTE: this endpoint (not a separate `api/v1/rul.py`
+
+        router) is the one and only implementation of `GET .../rul` — a
+
+        second router mounted under the same `engines` prefix at the same
+
+        path would create an ambiguous route, so `rul.py` is intentionally
+
+        left empty. See the Phase 4.0 plan notes.'
+      operationId: get_rul_predictions_api_v1_engines__engine_id__rul_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: From
+      - name: to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: To
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RulPrediction'
+                title: Response Get Rul Predictions Api V1 Engines  Engine Id  Rul Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/rul/status:
+    get:
+      tags:
+      - engines
+      summary: Get Rul Status
+      description: 'Accuracy-First Phase 2. Distinguishes "this engine has never had
+
+        enough telemetry to produce a RUL prediction yet" from "no
+
+        prediction has ever been persisted" (previously indistinguishable —
+
+        both showed as an empty `GET /rul` list). Reads `rul_service`''s
+
+        in-memory window depth directly — no DB query, O(1), always
+
+        up to date with the live ingestion process this API server runs in.'
+      operationId: get_rul_status_api_v1_engines__engine_id__rul_status_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/physics-consistency:
+    get:
+      tags:
+      - engines
+      summary: Get Physics Consistency
+      description: 'Accuracy-First Phase 4. The latest expected-vs-measured comparison
+
+        for each of the 5 channels the Otto-cycle physics model covers
+
+        (CHT, EGT, oil pressure, oil temp, fuel flow) — computed by every
+
+        live ingestion cycle (`physics_ingestion.py`) and persisted to
+
+        `physics_deviation_readings`, one row per (engine, ts, parameter).
+
+        Uses Postgres `DISTINCT ON` since each channel can in principle be
+
+        updated at a slightly different cadence — this always returns each
+
+        channel''s own most recent row, not just the 5 rows from one ts.'
+      operationId: get_physics_consistency_api_v1_engines__engine_id__physics_consistency_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/missions:
+    get:
+      tags:
+      - missions
+      summary: List Missions
+      description: List all missions. Any authenticated user.
+      operationId: list_missions_api_v1_missions_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Mission'
+                type: array
+                title: Response List Missions Api V1 Missions Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - missions
+      summary: Create Mission
+      description: Create a new mission. Operator, Program Manager, or Admin.
+      operationId: create_mission_api_v1_missions_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissionCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/missions/{mission_id}:
+    get:
+      tags:
+      - missions
+      summary: Get Mission
+      description: 'Get a single mission by ID, with a compact telemetry summary —
+
+        never the raw readings themselves (see /engines/{id}/telemetry for
+
+        that, already range/limit-capped).'
+      operationId: get_mission_api_v1_missions__mission_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: mission_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Mission Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - missions
+      summary: Update Mission
+      description: Update a mission. Operator, Program Manager, or Admin.
+      operationId: update_mission_api_v1_missions__mission_id__put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: mission_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Mission Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissionUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - missions
+      summary: Delete Mission
+      description: Delete a mission. Admin only.
+      operationId: delete_mission_api_v1_missions__mission_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: mission_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Mission Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/dashboard/summary:
+    get:
+      tags:
+      - dashboard
+      summary: Dashboard Summary
+      description: Return a high-level dashboard summary, including fused fleet health and recent alerts.
+      operationId: dashboard_summary_api_v1_dashboard_summary_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/engines/{engine_id}/faults/latest:
+    get:
+      tags:
+      - faults
+      summary: Get Latest Fault
+      description: Get the most recent fault prediction for an engine.
+      operationId: get_latest_fault_api_v1_engines__engine_id__faults_latest_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaultPrediction'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/bearing-health:
+    get:
+      tags:
+      - bearing
+      summary: Get Latest Bearing Health
+      description: 'Get the most recent bearing-health reading for an engine.
+
+
+        Serves the model''s real fields (class_id, class_label, fault_location,
+
+        severity_inches, confidence) rather than the Implementation Document''s
+
+        Section 12.4 `severity_score`, which does not exist on this model —
+
+        see the plan''s Phase 4.0 sign-off note.'
+      operationId: get_latest_bearing_health_api_v1_engines__engine_id__bearing_health_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BearingHealthReading'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/aux-latest:
+    get:
+      tags:
+      - aux
+      summary: Get Latest Aux
+      description: Get the most recent auxiliary predictive-maintenance prediction for an engine.
+      operationId: get_latest_aux_api_v1_engines__engine_id__aux_latest_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuxPrediction'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/maintenance-logs:
+    get:
+      tags:
+      - maintenance
+      summary: List Maintenance Logs
+      description: List maintenance actions logged against an engine, most recent first.
+      operationId: list_maintenance_logs_api_v1_engines__engine_id__maintenance_logs_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceLog'
+                title: Response List Maintenance Logs Api V1 Engines  Engine Id  Maintenance Logs Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - maintenance
+      summary: Create Maintenance Log
+      description: Log a maintenance action taken on an engine.
+      operationId: create_maintenance_log_api_v1_engines__engine_id__maintenance_logs_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceLogCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceLog'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/telemetry/ingest:
+    post:
+      tags:
+      - telemetry
+      summary: Ingest Telemetry
+      description: 'REST ingestion path for edge devices that can''t use MQTT. Shares the
+
+        same validation as the MQTT path (`app.services.validation`) so the
+
+        two ingestion routes can never silently drift on what''s plausible.'
+      operationId: ingest_telemetry_api_v1_telemetry_ingest_post
+      parameters:
+      - name: x-edge-api-key
+        in: header
+        required: true
+        schema:
+          type: string
+          title: X-Edge-Api-Key
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                engine_id:
-                  type: string
-                mission_id:
-                  type: string
-                ts:
-                  type: string
-                  format: date-time
-                rpm:
-                  type: number
-                cht:
-                  type: number
-                egt:
-                  type: number
-                oil_pressure:
-                  type: number
-                oil_temp:
-                  type: number
-                fuel_flow:
-                  type: number
+              additionalProperties: true
+              title: Payload
       responses:
-        '200':
-          description: Accepted
-  /engines/{engine_id}/telemetry/latest:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/telemetry:
     get:
-      summary: Get Latest Telemetry
-      parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-  /engines/{engine_id}/telemetry:
-    get:
+      tags:
+      - telemetry
       summary: Get Telemetry Range
+      description: Ranged telemetry query. Range is capped at 30 days to protect the hypertable.
+      operationId: get_telemetry_range_api_v1_engines__engine_id__telemetry_get
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      - name: from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: From
+      - name: to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: To
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5000
+          default: 500
+          title: Limit
       responses:
         '200':
-          description: Success
-  /engines/{engine_id}/faults/latest:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TelemetryReading'
+                title: Response Get Telemetry Range Api V1 Engines  Engine Id  Telemetry Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/models:
     get:
-      summary: Get Latest Fault Prediction
+      tags:
+      - models
+      summary: List Models
+      description: 'List registered model versions, optionally filtered by model_name.
+
+
+        Serves the ModelRegistry table''s real columns (model_name, version,
+
+        is_active, validation_score, registered_at) — the Implementation
+
+        Document''s Section 12.4 `framework`/`trained_at` fields don''t exist on
+
+        this table and aren''t invented here; see the plan''s Phase 4.0 sign-off.'
+      operationId: list_models_api_v1_models_get
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: model_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model Name
       responses:
         '200':
-          description: Success
-  /engines/{engine_id}/rul:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModelRegistry'
+                title: Response List Models Api V1 Models Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/alerts:
     get:
-      summary: Get RUL Prediction
+      tags:
+      - alerts
+      summary: List Alerts
+      description: 'List alerts, filterable by engine, severity, and acknowledgement state.
+
+        `is_acknowledged` omitted returns both; explicit true/false filters.'
+      operationId: list_alerts_api_v1_alerts_get
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: engine_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Engine Id
+      - name: severity
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Severity
+      - name: is_acknowledged
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Acknowledged
       responses:
         '200':
-          description: Success
-  /engines/{engine_id}/bearing-health:
-    get:
-      summary: Get Bearing Health
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alert'
+                title: Response List Alerts Api V1 Alerts Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/alerts/{alert_id}/acknowledge:
+    patch:
+      tags:
+      - alerts
+      summary: Acknowledge Alert
+      description: 'Acknowledge an alert. Idempotent-safe: acknowledging twice is a 409.'
+      operationId: acknowledge_alert_api_v1_alerts__alert_id__acknowledge_patch
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: alert_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Alert Id
       responses:
         '200':
-          description: Success
-  /engines/{engine_id}/health-score:
-    get:
-      summary: Get Engine Health Score
-      parameters:
-        - name: engine_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-  /dashboard/summary:
-    get:
-      summary: Get Dashboard Summary
-      responses:
-        '200':
-          description: Success
-  /missions:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/copilot/query:
     post:
-      summary: Create Mission
+      tags:
+      - copilot
+      summary: Query Copilot
+      description: 'Ask the AeroTwin Maintenance Copilot a question. Answered from the
+
+        static AeroTwin knowledge base (RAG), live engine data (when the
+
+        question and `engine_id` call for it), or both — see
+
+        AeroTwin_Rag/context_selector.py for how that''s decided.'
+      operationId: query_copilot_api_v1_copilot_query_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopilotQuery'
+        required: true
       responses:
         '200':
-          description: Success
-  /missions/{mission_id}:
-    get:
-      summary: Get Mission
-      parameters:
-        - name: mission_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-  /simulation/run:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CopilotResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/simulation/run:
     post:
-      summary: Run Simulation
+      tags:
+      - simulation
+      summary: Create Simulation Run
+      description: 'Kick off a replay (historical mission, re-run through the ML pipeline
+
+        at accelerated speed) or a what-if (synthetic scenario) simulation.
+
+        Runs in the background; poll `GET /simulation/{id}` for the result.'
+      operationId: create_simulation_run_api_v1_simulation_run_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationRunCreate'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/simulation/what-if/config:
+    get:
+      tags:
+      - simulation
+      summary: Get What If Config
+      description: Slider metadata (min/max/step/unit) and window settings for the What-If UI.
+      operationId: get_what_if_config_api_v1_simulation_what_if_config_get
       responses:
         '200':
-          description: Success
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/simulation/what-if:
+    post:
+      tags:
+      - simulation
+      summary: Run What If Scenario
+      description: 'Parameter-perturbation What-If: runs the engine''s recent REAL telemetry
+
+        window, with the requested parameter change applied in memory to the
+
+        last K readings, through the existing RUL/Fault/Bearing/Aux models and
+
+        Health Fusion, and compares against the unmodified window.
+
+
+        Strictly read-only: writes no telemetry, predictions, health scores or
+
+        alerts, broadcasts nothing, and does not touch live model state.
+
+        Synchronous (returns the finished result; `simulation_status` says how
+
+        it ended).'
+      operationId: run_what_if_scenario_api_v1_simulation_what_if_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatIfRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/simulation/{simulation_id}:
+    get:
+      tags:
+      - simulation
+      summary: Get Simulation Run
+      operationId: get_simulation_run_api_v1_simulation__simulation_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: simulation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Simulation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /healthz:
+    get:
+      summary: Healthz
+      operationId: healthz_healthz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
 components:
+  schemas:
+    Alert:
+      properties:
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        source:
+          type: string
+          title: Source
+        severity:
+          type: string
+          title: Severity
+        message:
+          type: string
+          title: Message
+        id:
+          type: string
+          format: uuid
+          title: Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        is_acknowledged:
+          type: boolean
+          title: Is Acknowledged
+        acknowledged_by:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Acknowledged By
+        acknowledged_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Acknowledged At
+      type: object
+      required:
+      - engine_id
+      - source
+      - severity
+      - message
+      - id
+      - created_at
+      - is_acknowledged
+      title: Alert
+    AuxPrediction:
+      properties:
+        ts:
+          type: string
+          format: date-time
+          title: Ts
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        model_version_id:
+          type: string
+          format: uuid
+          title: Model Version Id
+        failure_status:
+          type: string
+          title: Failure Status
+        risk_level:
+          type: string
+          title: Risk Level
+        failure_probability_pct:
+          type: number
+          title: Failure Probability Pct
+        detected_failure_types:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Detected Failure Types
+        primary_failure_cause:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Primary Failure Cause
+        recommended_action:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recommended Action
+      type: object
+      required:
+      - ts
+      - engine_id
+      - model_version_id
+      - failure_status
+      - risk_level
+      - failure_probability_pct
+      - detected_failure_types
+      - primary_failure_cause
+      - recommended_action
+      title: AuxPrediction
+    BearingHealthReading:
+      properties:
+        ts:
+          type: string
+          format: date-time
+          title: Ts
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        model_version_id:
+          type: string
+          format: uuid
+          title: Model Version Id
+        class_id:
+          type: integer
+          title: Class Id
+        class_label:
+          type: string
+          title: Class Label
+        fault_location:
+          type: string
+          title: Fault Location
+        severity_inches:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Severity Inches
+        confidence:
+          type: number
+          title: Confidence
+      type: object
+      required:
+      - ts
+      - engine_id
+      - model_version_id
+      - class_id
+      - class_label
+      - fault_location
+      - severity_inches
+      - confidence
+      title: BearingHealthReading
+    CopilotQuery:
+      properties:
+        message:
+          type: string
+          title: Message
+        engine_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Engine Id
+      type: object
+      required:
+      - message
+      title: CopilotQuery
+    CopilotResponse:
+      properties:
+        answer:
+          type: string
+          title: Answer
+        sources:
+          items:
+            type: string
+          type: array
+          title: Sources
+          default: []
+      type: object
+      required:
+      - answer
+      title: CopilotResponse
+    Engine:
+      properties:
+        serial_number:
+          type: string
+          title: Serial Number
+        uav_asset_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Uav Asset Id
+        status:
+          type: string
+          title: Status
+          default: operational
+        id:
+          type: string
+          format: uuid
+          title: Id
+      type: object
+      required:
+      - serial_number
+      - id
+      title: Engine
+    EngineCreate:
+      properties:
+        serial_number:
+          type: string
+          title: Serial Number
+        uav_asset_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Uav Asset Id
+        status:
+          type: string
+          title: Status
+          default: operational
+      type: object
+      required:
+      - serial_number
+      title: EngineCreate
+    EngineUpdate:
+      properties:
+        serial_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serial Number
+        uav_asset_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Uav Asset Id
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      type: object
+      title: EngineUpdate
+    FaultPrediction:
+      properties:
+        ts:
+          type: string
+          format: date-time
+          title: Ts
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        model_version_id:
+          type: string
+          format: uuid
+          title: Model Version Id
+        class_id:
+          type: integer
+          title: Class Id
+        fault_class:
+          type: string
+          title: Fault Class
+        confidence:
+          type: number
+          title: Confidence
+        probabilities:
+          items:
+            type: number
+          type: array
+          title: Probabilities
+        state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State
+      type: object
+      required:
+      - ts
+      - engine_id
+      - model_version_id
+      - class_id
+      - fault_class
+      - confidence
+      - probabilities
+      title: FaultPrediction
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LoginRequest:
+      properties:
+        email:
+          type: string
+          title: Email
+        password:
+          type: string
+          title: Password
+      type: object
+      required:
+      - email
+      - password
+      title: LoginRequest
+    MaintenanceLog:
+      properties:
+        action_taken:
+          type: string
+          maxLength: 120
+          minLength: 1
+          title: Action Taken
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        id:
+          type: string
+          format: uuid
+          title: Id
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        user_id:
+          type: string
+          format: uuid
+          title: User Id
+        logged_at:
+          type: string
+          format: date-time
+          title: Logged At
+      type: object
+      required:
+      - action_taken
+      - id
+      - engine_id
+      - user_id
+      - logged_at
+      title: MaintenanceLog
+    MaintenanceLogCreate:
+      properties:
+        action_taken:
+          type: string
+          maxLength: 120
+          minLength: 1
+          title: Action Taken
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - action_taken
+      title: MaintenanceLogCreate
+    Mission:
+      properties:
+        uav_asset_id:
+          type: string
+          format: uuid
+          title: Uav Asset Id
+        mission_type:
+          type: string
+          title: Mission Type
+        start_time:
+          type: string
+          format: date-time
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+        environmental_profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Environmental Profile
+        status:
+          type: string
+          title: Status
+          default: scheduled
+        id:
+          type: string
+          format: uuid
+          title: Id
+      type: object
+      required:
+      - uav_asset_id
+      - mission_type
+      - start_time
+      - id
+      title: Mission
+    MissionCreate:
+      properties:
+        uav_asset_id:
+          type: string
+          format: uuid
+          title: Uav Asset Id
+        mission_type:
+          type: string
+          title: Mission Type
+        start_time:
+          type: string
+          format: date-time
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+        environmental_profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Environmental Profile
+        status:
+          type: string
+          title: Status
+          default: scheduled
+      type: object
+      required:
+      - uav_asset_id
+      - mission_type
+      - start_time
+      title: MissionCreate
+    MissionDetail:
+      properties:
+        uav_asset_id:
+          type: string
+          format: uuid
+          title: Uav Asset Id
+        mission_type:
+          type: string
+          title: Mission Type
+        start_time:
+          type: string
+          format: date-time
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+        environmental_profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Environmental Profile
+        status:
+          type: string
+          title: Status
+          default: scheduled
+        id:
+          type: string
+          format: uuid
+          title: Id
+        telemetry_summary:
+          anyOf:
+          - $ref: '#/components/schemas/TelemetrySummary'
+          - type: 'null'
+      type: object
+      required:
+      - uav_asset_id
+      - mission_type
+      - start_time
+      - id
+      title: MissionDetail
+    MissionUpdate:
+      properties:
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+        end_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+      type: object
+      title: MissionUpdate
+    ModelRegistry:
+      properties:
+        model_name:
+          type: string
+          title: Model Name
+        version:
+          type: string
+          title: Version
+        is_active:
+          type: boolean
+          title: Is Active
+          default: false
+        validation_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Validation Score
+        id:
+          type: string
+          format: uuid
+          title: Id
+        registered_at:
+          type: string
+          format: date-time
+          title: Registered At
+      type: object
+      required:
+      - model_name
+      - version
+      - id
+      - registered_at
+      title: ModelRegistry
+    RefreshRequest:
+      properties:
+        refresh_token:
+          type: string
+          title: Refresh Token
+      type: object
+      required:
+      - refresh_token
+      title: RefreshRequest
+    RulPrediction:
+      properties:
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        ts:
+          type: string
+          format: date-time
+          title: Ts
+        rul_cycles:
+          type: number
+          title: Rul Cycles
+        degradation_index:
+          type: number
+          title: Degradation Index
+        rul_lower:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Rul Lower
+        rul_upper:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Rul Upper
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      type: object
+      required:
+      - engine_id
+      - ts
+      - rul_cycles
+      - degradation_index
+      title: RulPrediction
+    SimulationRunCreate:
+      properties:
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        mode:
+          type: string
+          enum:
+          - replay
+          - what_if
+          title: Mode
+        mission_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Mission Id
+        environmental_profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Environmental Profile
+      type: object
+      required:
+      - engine_id
+      - mode
+      title: SimulationRunCreate
+    TelemetryReading:
+      properties:
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        mission_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Mission Id
+        ts:
+          type: string
+          format: date-time
+          title: Ts
+        rpm:
+          type: number
+          title: Rpm
+        cht:
+          type: number
+          title: Cht
+        egt:
+          type: number
+          title: Egt
+        oil_pressure:
+          type: number
+          title: Oil Pressure
+        oil_temp:
+          type: number
+          title: Oil Temp
+        fuel_flow:
+          type: number
+          title: Fuel Flow
+        vibration_x:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Vibration X
+        vibration_y:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Vibration Y
+        vibration_z:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Vibration Z
+        throttle:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Throttle
+        altitude_m:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Altitude M
+        quality_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Quality Status
+      type: object
+      required:
+      - engine_id
+      - ts
+      - rpm
+      - cht
+      - egt
+      - oil_pressure
+      - oil_temp
+      - fuel_flow
+      title: TelemetryReading
+    TelemetrySummary:
+      properties:
+        reading_count:
+          type: integer
+          title: Reading Count
+        first_ts:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: First Ts
+        last_ts:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Ts
+        rpm_avg:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Rpm Avg
+        rpm_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Rpm Max
+        cht_avg:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cht Avg
+        cht_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cht Max
+        egt_avg:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Egt Avg
+        egt_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Egt Max
+        oil_pressure_min:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Oil Pressure Min
+        fuel_flow_avg:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Fuel Flow Avg
+      type: object
+      required:
+      - reading_count
+      title: TelemetrySummary
+    TokenResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        refresh_token:
+          type: string
+          title: Refresh Token
+        expires_in:
+          type: integer
+          title: Expires In
+        role:
+          type: string
+          title: Role
+      type: object
+      required:
+      - access_token
+      - refresh_token
+      - expires_in
+      - role
+      title: TokenResponse
+    UAVAsset:
+      properties:
+        tail_number:
+          type: string
+          title: Tail Number
+        status:
+          type: string
+          title: Status
+          default: active
+        id:
+          type: string
+          format: uuid
+          title: Id
+      type: object
+      required:
+      - tail_number
+      - id
+      title: UAVAsset
+    UAVAssetCreate:
+      properties:
+        tail_number:
+          type: string
+          title: Tail Number
+        status:
+          type: string
+          title: Status
+          default: active
+      type: object
+      required:
+      - tail_number
+      title: UAVAssetCreate
+    UAVAssetUpdate:
+      properties:
+        tail_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tail Number
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      type: object
+      title: UAVAssetUpdate
+    User:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        role:
+          type: string
+          title: Role
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        id:
+          type: string
+          format: uuid
+          title: Id
+      type: object
+      required:
+      - email
+      - role
+      - id
+      title: User
+    UserCreate:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        role:
+          type: string
+          title: Role
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        password:
+          type: string
+          title: Password
+      type: object
+      required:
+      - email
+      - role
+      - password
+      title: UserCreate
+    UserUpdate:
+      properties:
+        email:
+          anyOf:
+          - type: string
+            format: email
+          - type: 'null'
+          title: Email
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+        password:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Password
+      type: object
+      title: UserUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WhatIfRequest:
+      properties:
+        engine_id:
+          type: string
+          format: uuid
+          title: Engine Id
+        baseline_timestamp:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Baseline Timestamp
+        parameters:
+          additionalProperties: true
+          type: object
+          title: Parameters
+      type: object
+      required:
+      - engine_id
+      - parameters
+      title: WhatIfRequest
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-security:
-  - BearerAuth: []
+    OAuth2PasswordBearer:
+      type: oauth2
+      flows:
+        password:
+          scopes: {}
+          tokenUrl: /api/v1/auth/login

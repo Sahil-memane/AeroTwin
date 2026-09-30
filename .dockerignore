@@ -1,0 +1,35 @@
+# Repo-root build context (Dockerfile.backend). Keep the image lean and free
+# of secrets: only backend/, ml/training model artifacts and simulation/ are
+# copied, and even within those, nothing that isn't needed at runtime.
+
+.git
+.github
+.vscode
+.idea
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/node_modules
+**/.venv
+**/.env
+
+# Not part of the backend image
+frontend
+docs
+edge
+infra
+scripts
+backend/tests
+backend/.coveragerc
+
+# Training-time only material (datasets, plots) — inference needs just the
+# saved models, feature/label JSON and the physics-model code.
+ml/data
+ml/models
+ml/tests
+ml/training/**/*.png
+ml/training/**/*.csv
+ml/training/**/*.txt
+!ml/training/**/requirements.txt

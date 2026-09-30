@@ -29,6 +29,20 @@ target_metadata = Base.metadata
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
+# TimescaleDB's create_hypertable('telemetry_readings', 'ts') (see the
+# initial migration) creates its own internal chunk-time index that is
+# never declared on the SQLAlchemy model. Left unfiltered, `alembic
+# check`/autogenerate would perpetually propose dropping it as "drift" —
+# excluding it here is the standard Timescale+Alembic pattern, not a
+# suppressed real difference.
+_TIMESCALE_MANAGED_INDEXES = {"telemetry_readings_ts_idx"}
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "index" and name in _TIMESCALE_MANAGED_INDEXES:
+        return False
+    return True
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -53,6 +67,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -60,7 +75,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, include_object=include_object)
 
     with context.begin_transaction():
         context.run_migrations()

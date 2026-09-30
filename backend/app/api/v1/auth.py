@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel
@@ -6,7 +6,12 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from app.db.session import get_db
-from app.core.security import verify_password, create_access_token, get_current_user
+from app.core.security import (
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    get_user_from_refresh_token,
+)
 from app.models.user import User
 
 router = APIRouter()
@@ -48,7 +53,7 @@ async def login(
         raise HTTPException(status_code=423, detail="Account locked or inactive")
 
     access_token = create_access_token(subject=str(user.id))
-    refresh_token = create_access_token(subject=str(user.id))
+    refresh_token = create_refresh_token(subject=str(user.id))
 
     return TokenResponse(
         access_token=access_token,
@@ -59,9 +64,10 @@ async def login(
 
 
 @router.post("/refresh")
-async def refresh(req: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    """Validate a refresh token and issue a new access token."""
-    current_user = await get_current_user(db=db, token=req.refresh_token)
+@limiter.limit("10/minute")
+async def refresh(request: Request, req: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    """Validate a refresh token (rejecting an access token) and issue a new access token."""
+    current_user = await get_user_from_refresh_token(db=db, token=req.refresh_token)
     access_token = create_access_token(subject=str(current_user.id))
     return {
         "access_token": access_token,

@@ -12,8 +12,9 @@ Training preprocessing contract (from normalization.json):
 """
 
 import math
+from typing import Optional
+
 import numpy as np
-from typing import Dict, Any
 
 # ── Training normalization constants (from normalization.json) ────────
 NORM_MEAN: float = 0.01568922728195663
@@ -32,21 +33,43 @@ _OUTER_RACE_HARM:  float = 3.585   # Ball Pass Frequency Outer Race (BPFO)
 _BALL_HARM:        float = 2.357   # Ball Spin Frequency (BSF)
 
 
+# Resonance carrier frequencies the training spectrograms respond to per
+# defect family — picked empirically (see the bearing-adapter recalibration
+# note below), not physical constants.
+_HARMONICS = (
+    (_INNER_RACE_HARM, 1.0, 3200.0),
+    (_OUTER_RACE_HARM, 0.7, 2400.0),
+    (_BALL_HARM, 0.5, 1800.0),
+)
+_IMPULSE_DECAY: float = 700.0  # exponential ringdown rate per impulse (1/s)
+_BASE_NOISE_STD: float = 0.05
+
+
 def _generate_vibration_window(
     vibration_magnitude: float,
     rpm: float = 1772.0,
     fault_hint: str = "none",
+    seed: Optional[int] = None,
 ) -> np.ndarray:
     """
     Synthesize a 1024-sample vibration window from a scalar magnitude.
 
-    The waveform is composed of:
-      - White noise at the given amplitude (always present).
-      - Harmonic fault signatures injected when magnitude is elevated,
-        shaped to loosely mimic CWRU defect patterns.
-
-    This keeps the CNN inference flowing in real-time during the demo
-    while the real accelerometer data source is not yet connected.
+    Recalibration note: the original synthesis here was plain white noise
+    plus one weak sinusoid. Direct probing of the loaded CNN (see
+    conversation history / verification notes, not reproduced in a comment
+    dump) showed that *any* such input above a small amplitude threshold
+    saturates the softmax onto a single class (IR_014, confidence 1.0) —
+    for both this demo's synthesized inputs AND plain Gaussian noise at the
+    training normalization's own std. Broadband noise doesn't carry the
+    impulsive, resonance-ringdown structure the model was trained to key
+    off of. Replacing the fault component with a superposition of decaying
+    impulse trains at the three classic bearing defect harmonics (BPFI/
+    BPFO/BSF), each ringing at a distinct carrier frequency, was verified
+    to produce a real, monotonic-ish severity progression as amplitude
+    rises (Normal -> _014-class severity -> _021-class severity) instead
+    of a single frozen output — this is still a synthetic proxy for real
+    accelerometer data (none is connected yet), not a claim of defect-type
+    accuracy.
 
     Args:
         vibration_magnitude: scalar vibration level from telemetry (g or m/s²).
@@ -56,36 +79,37 @@ def _generate_vibration_window(
     Returns:
         np.ndarray of shape (1024,) with float32 values.
     """
-    rng = np.random.default_rng()  # fresh RNG per call — no reproducibility needed
+    # seed=None (live/replay) -> fresh entropy per call, unchanged. The What-If
+    # engine passes a window-derived seed so baseline and scenario runs share
+    # identical synthetic noise and differ only by their actual inputs.
+    rng = np.random.default_rng(seed)
 
-    # Base white noise scaled to the vibration magnitude
-    noise_amp = vibration_magnitude * 0.6
-    signal = rng.normal(0.0, noise_amp, size=SAMPLE_LEN).astype(np.float32)
+    t = np.arange(SAMPLE_LEN, dtype=np.float64) / SAMPLE_RATE
+    signal = rng.normal(0.0, _BASE_NOISE_STD, size=SAMPLE_LEN)
 
-    # Time axis
     rpm_hz = rpm / 60.0
-    t = np.linspace(0.0, SAMPLE_LEN / SAMPLE_RATE, num=SAMPLE_LEN, endpoint=False, dtype=np.float32)
+    amp = max(0.0, vibration_magnitude - 0.2) * 1.4
+    if fault_hint == "high_vibration":
+        amp *= 1.3  # an actively-injected simulator fault escalates severity further
 
-    # Inject harmonic content proportional to vibration above baseline
-    fault_amp = max(0.0, vibration_magnitude - 0.25)  # only inject above quiet baseline
+    if amp > 0.03:
+        for harmonic_mult, weight, resonance_hz in _HARMONICS:
+            defect_freq = harmonic_mult * rpm_hz
+            period = 1.0 / defect_freq
+            n_impulses = int(t[-1] * defect_freq) + 2
+            for k in range(n_impulses):
+                t0 = k * period
+                envelope = amp * weight * np.exp(-_IMPULSE_DECAY * np.abs(t - t0))
+                signal += envelope * np.sin(2 * math.pi * resonance_hz * (t - t0))
 
-    if fault_amp > 0.05:
-        if fault_hint == "high_vibration":
-            # Strong outer-race harmonic when fault is active in simulator
-            freq = _OUTER_RACE_HARM * rpm_hz
-            signal += fault_amp * np.sin(2 * math.pi * freq * t, dtype=np.float32)
-            signal += (fault_amp * 0.4) * np.sin(4 * math.pi * freq * t, dtype=np.float32)
-        else:
-            # Low-level bearing rumble — mostly white noise + mild shaft harmonic
-            signal += (fault_amp * 0.3) * np.sin(2 * math.pi * rpm_hz * t, dtype=np.float32)
-
-    return signal
+    return signal.astype(np.float32)
 
 
 def preprocess_to_matrix(
     vibration_magnitude: float,
     rpm: float = 1772.0,
     fault_hint: str = "none",
+    seed: Optional[int] = None,
 ) -> np.ndarray:
     """
     Full preprocessing pipeline matching Model 3 training:
@@ -98,7 +122,7 @@ def preprocess_to_matrix(
         np.ndarray of shape (1, 32, 32, 1) ready for model.predict().
     """
     # Step 1 — synthesise
-    signal = _generate_vibration_window(vibration_magnitude, rpm, fault_hint)
+    signal = _generate_vibration_window(vibration_magnitude, rpm, fault_hint, seed)
 
     # Step 2 — normalise with training constants (must NOT re-compute from sample)
     signal_norm = (signal - NORM_MEAN) / (NORM_STD + NORM_EPS)

@@ -1,0 +1,11 @@
+# Edge agent runtime dependencies — deliberately NOT the cloud backend's
+# requirements.txt. The whole point of the ONNX export (ml/export_onnx.py)
+# is that Fault + RUL inference no longer need tensorflow/xgboost/lightgbm/
+# scikit-learn/joblib on the edge device — onnxruntime alone runs both
+# exported models. scipy is still needed for the Fault feature
+# extraction's skew/kurtosis stats (backend/app/services/fault_adapter.py,
+# imported directly rather than duplicated).
+onnxruntime==1.30.0
+numpy
+scipy
+paho-mqtt

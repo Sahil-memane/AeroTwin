@@ -1,0 +1,900 @@
+{
+ "full": {
+  "mode": "WHAT_IF",
+  "scenario_type": "PARAMETER_PERTURBATION",
+  "perturbation_count": 10,
+  "perturbation_window_config": 10,
+  "perturbation_method": "delta_applied_to_last_k_readings",
+  "engine_id": "eng-1",
+  "simulation_status": "COMPLETED",
+  "baseline_timestamp": "2020-01-01T12:02:56",
+  "baseline": {
+   "rpm": 4775.469522727724,
+   "cht": 148.77347613638622,
+   "egt": 826.3204284091587,
+   "oil_pressure": 89.08010710228966,
+   "oil_temperature": 97.38673806819311,
+   "fuel_flow": 8.377347613638623
+  },
+  "scenario": {
+   "rpm": 5175.469522727724,
+   "cht": 148.77347613638622,
+   "egt": 886.3204284091587,
+   "oil_pressure": 89.08010710228966,
+   "oil_temperature": 97.38673806819311,
+   "fuel_flow": 8.377347613638623
+  },
+  "delta": {
+   "rpm": 400.0,
+   "cht": 0.0,
+   "egt": 60.0,
+   "oil_pressure": 0.0,
+   "oil_temperature": 0.0,
+   "fuel_flow": 0.0
+  },
+  "window": {
+   "total_readings": 89,
+   "perturbed_readings": 10,
+   "required_readings": {
+    "fault": 80,
+    "rul": 30
+   },
+   "loaded_target": 89,
+   "data_sufficiency": "SUFFICIENT",
+   "clamped_values": 0,
+   "aux_wear_seed": 0.0,
+   "aux_wear_source": "unavailable_seeded_zero"
+  },
+  "feature_mapping": {
+   "rul": {
+    "direct": [
+     "rpm",
+     "cht",
+     "egt",
+     "oil_pressure",
+     "oil_temperature",
+     "fuel_flow"
+    ],
+    "note": "Via piston_to_cmapss; all six also shift the server-computed physics deviation_score (RUL's top feature)."
+   },
+   "fault": {
+    "direct": [
+     "rpm",
+     "cht",
+     "egt",
+     "oil_pressure",
+     "oil_temperature",
+     "fuel_flow"
+    ],
+    "note": "Via piston_to_uav_telemetry proxy channels over an 80-reading window."
+   },
+   "bearing": {
+    "direct": [
+     "rpm"
+    ],
+    "note": "Model input is vibration magnitude + RPM; RPM only sets the synthetic defect frequency. Vibration amplitude is not a scenario input."
+   },
+   "auxiliary": {
+    "direct": [
+     "rpm",
+     "cht"
+    ],
+    "note": "AI4I features derive from RPM and CHT (plus vibration_x); RPM also drives accumulated wear state."
+   }
+  },
+  "model_results": {
+   "rul": {
+    "baseline": {
+     "rul_cycles": 6.06,
+     "rul_lower": 0.0,
+     "rul_upper": 28.88,
+     "degradation_index": 0.9515,
+     "status": "COMPLETED",
+     "model_status": "VALID"
+    },
+    "scenario": {
+     "rul_cycles": 0.0,
+     "rul_lower": 0.0,
+     "rul_upper": 22.82,
+     "degradation_index": 1.0,
+     "status": "COMPLETED",
+     "model_status": "VALID"
+    },
+    "changed": true,
+    "delta_cycles": -6.06
+   },
+   "fault": {
+    "baseline": {
+     "class_id": 0,
+     "fault_class": "No Failure",
+     "confidence": 0.5830507796519293,
+     "probabilities": [
+      0.5830507796519293,
+      0.4169492203480707,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "state": "NORMAL",
+     "input_coverage": 0.46875,
+     "reliable": false,
+     "status": "COMPLETED",
+     "inferences": 10
+    },
+    "scenario": {
+     "class_id": 5,
+     "fault_class": "Compass Failure",
+     "confidence": 0.9988670067334271,
+     "probabilities": [
+      0.0,
+      4.705876546821835e-07,
+      4.7230096069503875e-08,
+      2.8829850658069746e-08,
+      3.3896770930910003e-07,
+      0.001132107651262118,
+      0.9988670067334271
+     ],
+     "state": "ANOMALY_DETECTED",
+     "input_coverage": 0.46875,
+     "reliable": false,
+     "status": "COMPLETED",
+     "inferences": 10
+    },
+    "changed": true,
+    "delta_confidence": 0.4158162270814978
+   },
+   "bearing": {
+    "baseline": {
+     "class_id": 8,
+     "class_label": "OR_014",
+     "fault_location": "Outer Race",
+     "severity_inches": 0.014,
+     "confidence": 1.0,
+     "probabilities": [
+      1.4662106195771671e-18,
+      4.578726125759732e-20,
+      4.0401170364919026e-13,
+      3.444346983446305e-19,
+      4.0115865781954665e-15,
+      2.7885282071652726e-28,
+      6.617847329165594e-12,
+      6.3060635024830745e-21,
+      1.0,
+      3.155935112782436e-22
+     ],
+     "status": "COMPLETED",
+     "inputs": {
+      "vibration_magnitude": 0.381,
+      "rpm": 4775.469522727724
+     }
+    },
+    "scenario": {
+     "class_id": 4,
+     "class_label": "IR_014",
+     "fault_location": "Inner Race",
+     "severity_inches": 0.014,
+     "confidence": 0.9229917526245117,
+     "probabilities": [
+      4.804399509339419e-07,
+      5.366088018377013e-09,
+      1.444926400751001e-10,
+      1.8650868609942917e-13,
+      0.9229917526245117,
+      2.970832998008821e-12,
+      1.4088529821931761e-11,
+      8.264676443214825e-11,
+      5.118328516573456e-08,
+      0.07700762152671814
+     ],
+     "status": "COMPLETED",
+     "inputs": {
+      "vibration_magnitude": 0.381,
+      "rpm": 5175.469522727724
+     }
+    },
+    "input_changed": true,
+    "changed": true,
+    "note": "Bearing output changed; the only scenario input reaching the bearing model is RPM (synthetic defect frequency). Vibration amplitude was not modified."
+   },
+   "auxiliary": {
+    "baseline": {
+     "failure_status": "HEALTHY",
+     "risk_level": "MODERATE",
+     "failure_probability_pct": 30.8236531986532,
+     "detected_failure_types": [],
+     "primary_failure_cause": null,
+     "recommended_action": "Schedule preventive inspection",
+     "status": "COMPLETED"
+    },
+    "scenario": {
+     "failure_status": "HEALTHY",
+     "risk_level": "MODERATE",
+     "failure_probability_pct": 30.8236531986532,
+     "detected_failure_types": [],
+     "primary_failure_cause": null,
+     "recommended_action": "Schedule preventive inspection",
+     "status": "COMPLETED"
+    },
+    "input_changed": true,
+    "changed": false,
+    "delta_failure_probability_pct": 0.0,
+    "note": null
+   }
+  },
+  "health_fusion": {
+   "baseline": {
+    "score": 51.45,
+    "contributing_factors": [
+     {
+      "source": "rul",
+      "penalty": 28.55,
+      "rul_cycles": 6.06,
+      "degradation_index": 0.9515
+     },
+     {
+      "source": "bearing",
+      "penalty": 20.0,
+      "class_label": "OR_014",
+      "fault_location": "Outer Race",
+      "severity_inches": 0.014
+     }
+    ],
+    "sources": {
+     "rul": {
+      "penalty": 28.55,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "fault": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": true
+     },
+     "bearing": {
+      "penalty": 20.0,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "aux": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     }
+    },
+    "primary_concern": "RUL: 6.06 cycles remaining (-28.55 pts)",
+    "forced_zero": false,
+    "missing_sources": [],
+    "excluded_sources": [
+     "fault"
+    ]
+   },
+   "scenario": {
+    "score": 50.0,
+    "contributing_factors": [
+     {
+      "source": "rul",
+      "penalty": 30.0,
+      "rul_cycles": 0.0,
+      "degradation_index": 1.0
+     },
+     {
+      "source": "bearing",
+      "penalty": 20.0,
+      "class_label": "IR_014",
+      "fault_location": "Inner Race",
+      "severity_inches": 0.014
+     }
+    ],
+    "sources": {
+     "rul": {
+      "penalty": 30.0,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "fault": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": true
+     },
+     "bearing": {
+      "penalty": 20.0,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "aux": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     }
+    },
+    "primary_concern": "RUL: 0.0 cycles remaining (-30.0 pts)",
+    "forced_zero": false,
+    "missing_sources": [],
+    "excluded_sources": [
+     "fault"
+    ]
+   },
+   "score_delta": -1.45,
+   "score": 50.0,
+   "contributing_factors": [
+    {
+     "source": "rul",
+     "penalty": 30.0,
+     "rul_cycles": 0.0,
+     "degradation_index": 1.0
+    },
+    {
+     "source": "bearing",
+     "penalty": 20.0,
+     "class_label": "IR_014",
+     "fault_location": "Inner Race",
+     "severity_inches": 0.014
+    }
+   ],
+   "sources": {
+    "rul": {
+     "penalty": 30.0,
+     "active": true,
+     "forced_zero": false,
+     "available": true,
+     "excluded": false
+    },
+    "fault": {
+     "penalty": 0.0,
+     "active": false,
+     "forced_zero": false,
+     "available": true,
+     "excluded": true
+    },
+    "bearing": {
+     "penalty": 20.0,
+     "active": true,
+     "forced_zero": false,
+     "available": true,
+     "excluded": false
+    },
+    "aux": {
+     "penalty": 0.0,
+     "active": false,
+     "forced_zero": false,
+     "available": true,
+     "excluded": false
+    }
+   },
+   "primary_concern": "RUL: 0.0 cycles remaining (-30.0 pts)",
+   "forced_zero": false,
+   "missing_sources": [],
+   "excluded_sources": [
+    "fault"
+   ]
+  },
+  "physics_consistency": {
+   "deviation_score": {
+    "baseline": 1.2383,
+    "scenario": 1.2658
+   },
+   "parameters": {
+    "cht": {
+     "expected": 136.2,
+     "measured": 148.77,
+     "residual": 12.57,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 21.86,
+     "baseline_status": "ELEVATED"
+    },
+    "egt": {
+     "expected": 816.94,
+     "measured": 886.32,
+     "residual": 69.38,
+     "status": "ELEVATED",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 16.05,
+     "baseline_status": "CONSISTENT"
+    },
+    "oil_pressure": {
+     "expected": 95.2,
+     "measured": 89.08,
+     "residual": -6.12,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": -2.92,
+     "baseline_status": "CONSISTENT"
+    },
+    "oil_temperature": {
+     "expected": 105.12,
+     "measured": 97.39,
+     "residual": -7.73,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": -4.27,
+     "baseline_status": "CONSISTENT"
+    },
+    "fuel_flow": {
+     "expected": 4.63,
+     "measured": 8.38,
+     "residual": 3.75,
+     "status": "ELEVATED",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 4.55,
+     "baseline_status": "REVIEW"
+    }
+   }
+  },
+  "alerts": {
+   "simulation": true,
+   "baseline": null,
+   "scenario": null,
+   "change": "NONE"
+  },
+  "assumptions": [
+   "telemetry_readings does not persist throttle/altitude_m; RUL uses adapter defaults and physics estimates throttle from RPM (identical for baseline and scenario).",
+   "Vibration magnitude is derived from stored vibration_x/y/z."
+  ],
+  "model_versions": {
+   "rul_model": "unregistered",
+   "fault_model": "unregistered",
+   "bearing_model": "unregistered",
+   "aux_model": "unregistered"
+  },
+  "live_reference": null
+ },
+ "short": {
+  "mode": "WHAT_IF",
+  "scenario_type": "PARAMETER_PERTURBATION",
+  "perturbation_count": 10,
+  "perturbation_window_config": 10,
+  "perturbation_method": "delta_applied_to_last_k_readings",
+  "engine_id": "eng-1",
+  "simulation_status": "INSUFFICIENT_DATA",
+  "baseline_timestamp": "2020-01-01T12:00:38",
+  "baseline": {
+   "rpm": 4760.637399796734,
+   "cht": 148.0318699898367,
+   "egt": 824.0956099695102,
+   "oil_pressure": 88.52390249237753,
+   "oil_temperature": 97.01593499491835,
+   "fuel_flow": 8.303186998983671
+  },
+  "scenario": {
+   "rpm": 4760.637399796734,
+   "cht": 170.0,
+   "egt": 824.0956099695102,
+   "oil_pressure": 88.52390249237753,
+   "oil_temperature": 97.01593499491835,
+   "fuel_flow": 8.303186998983671
+  },
+  "delta": {
+   "rpm": 0.0,
+   "cht": 21.968130010163293,
+   "egt": 0.0,
+   "oil_pressure": 0.0,
+   "oil_temperature": 0.0,
+   "fuel_flow": 0.0
+  },
+  "window": {
+   "total_readings": 20,
+   "perturbed_readings": 10,
+   "required_readings": {
+    "fault": 80,
+    "rul": 30
+   },
+   "loaded_target": 89,
+   "data_sufficiency": "INSUFFICIENT_DATA",
+   "clamped_values": 0,
+   "aux_wear_seed": 0.0,
+   "aux_wear_source": "unavailable_seeded_zero"
+  },
+  "feature_mapping": {
+   "rul": {
+    "direct": [
+     "rpm",
+     "cht",
+     "egt",
+     "oil_pressure",
+     "oil_temperature",
+     "fuel_flow"
+    ],
+    "note": "Via piston_to_cmapss; all six also shift the server-computed physics deviation_score (RUL's top feature)."
+   },
+   "fault": {
+    "direct": [
+     "rpm",
+     "cht",
+     "egt",
+     "oil_pressure",
+     "oil_temperature",
+     "fuel_flow"
+    ],
+    "note": "Via piston_to_uav_telemetry proxy channels over an 80-reading window."
+   },
+   "bearing": {
+    "direct": [
+     "rpm"
+    ],
+    "note": "Model input is vibration magnitude + RPM; RPM only sets the synthetic defect frequency. Vibration amplitude is not a scenario input."
+   },
+   "auxiliary": {
+    "direct": [
+     "rpm",
+     "cht"
+    ],
+    "note": "AI4I features derive from RPM and CHT (plus vibration_x); RPM also drives accumulated wear state."
+   }
+  },
+  "model_results": {
+   "rul": {
+    "baseline": {
+     "status": "INSUFFICIENT_DATA",
+     "message": "20/30 readings available"
+    },
+    "scenario": {
+     "status": "INSUFFICIENT_DATA",
+     "message": "20/30 readings available"
+    },
+    "changed": false,
+    "delta_cycles": null
+   },
+   "fault": {
+    "baseline": {
+     "status": "INSUFFICIENT_DATA",
+     "message": "20/80 readings available"
+    },
+    "scenario": {
+     "status": "INSUFFICIENT_DATA",
+     "message": "20/80 readings available"
+    },
+    "changed": false,
+    "delta_confidence": null
+   },
+   "bearing": {
+    "baseline": {
+     "class_id": 8,
+     "class_label": "OR_014",
+     "fault_location": "Outer Race",
+     "severity_inches": 0.014,
+     "confidence": 1.0,
+     "probabilities": [
+      1.6930904029971563e-20,
+      7.173669336300364e-22,
+      1.317072319262369e-12,
+      3.6396754745900164e-20,
+      6.986823395576511e-17,
+      5.566797060748433e-30,
+      7.792367445746962e-11,
+      5.316336345982604e-22,
+      1.0,
+      1.0338353484501553e-23
+     ],
+     "status": "COMPLETED",
+     "inputs": {
+      "vibration_magnitude": 0.355,
+      "rpm": 4760.637399796734
+     }
+    },
+    "scenario": {
+     "class_id": 8,
+     "class_label": "OR_014",
+     "fault_location": "Outer Race",
+     "severity_inches": 0.014,
+     "confidence": 1.0,
+     "probabilities": [
+      1.6930904029971563e-20,
+      7.173669336300364e-22,
+      1.317072319262369e-12,
+      3.6396754745900164e-20,
+      6.986823395576511e-17,
+      5.566797060748433e-30,
+      7.792367445746962e-11,
+      5.316336345982604e-22,
+      1.0,
+      1.0338353484501553e-23
+     ],
+     "status": "COMPLETED",
+     "inputs": {
+      "vibration_magnitude": 0.355,
+      "rpm": 4760.637399796734
+     }
+    },
+    "input_changed": false,
+    "changed": false,
+    "note": "Bearing prediction unchanged: the scenario did not modify the bearing model's inputs (vibration magnitude, RPM)."
+   },
+   "auxiliary": {
+    "baseline": {
+     "failure_status": "HEALTHY",
+     "risk_level": "MODERATE",
+     "failure_probability_pct": 30.8236531986532,
+     "detected_failure_types": [],
+     "primary_failure_cause": null,
+     "recommended_action": "Schedule preventive inspection",
+     "status": "COMPLETED"
+    },
+    "scenario": {
+     "failure_status": "HEALTHY",
+     "risk_level": "MODERATE",
+     "failure_probability_pct": 30.8236531986532,
+     "detected_failure_types": [],
+     "primary_failure_cause": null,
+     "recommended_action": "Schedule preventive inspection",
+     "status": "COMPLETED"
+    },
+    "input_changed": true,
+    "changed": false,
+    "delta_failure_probability_pct": 0.0,
+    "note": null
+   }
+  },
+  "health_fusion": {
+   "baseline": {
+    "score": 80.0,
+    "contributing_factors": [
+     {
+      "source": "bearing",
+      "penalty": 20.0,
+      "class_label": "OR_014",
+      "fault_location": "Outer Race",
+      "severity_inches": 0.014
+     }
+    ],
+    "sources": {
+     "rul": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": false,
+      "excluded": false
+     },
+     "fault": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": false,
+      "excluded": false
+     },
+     "bearing": {
+      "penalty": 20.0,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "aux": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     }
+    },
+    "primary_concern": "BEARING: OR_014 at Outer Race (0.014in, -20.0 pts)",
+    "forced_zero": false,
+    "missing_sources": [
+     "rul",
+     "fault"
+    ],
+    "excluded_sources": []
+   },
+   "scenario": {
+    "score": 80.0,
+    "contributing_factors": [
+     {
+      "source": "bearing",
+      "penalty": 20.0,
+      "class_label": "OR_014",
+      "fault_location": "Outer Race",
+      "severity_inches": 0.014
+     }
+    ],
+    "sources": {
+     "rul": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": false,
+      "excluded": false
+     },
+     "fault": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": false,
+      "excluded": false
+     },
+     "bearing": {
+      "penalty": 20.0,
+      "active": true,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     },
+     "aux": {
+      "penalty": 0.0,
+      "active": false,
+      "forced_zero": false,
+      "available": true,
+      "excluded": false
+     }
+    },
+    "primary_concern": "BEARING: OR_014 at Outer Race (0.014in, -20.0 pts)",
+    "forced_zero": false,
+    "missing_sources": [
+     "rul",
+     "fault"
+    ],
+    "excluded_sources": []
+   },
+   "score_delta": 0.0,
+   "score": 80.0,
+   "contributing_factors": [
+    {
+     "source": "bearing",
+     "penalty": 20.0,
+     "class_label": "OR_014",
+     "fault_location": "Outer Race",
+     "severity_inches": 0.014
+    }
+   ],
+   "sources": {
+    "rul": {
+     "penalty": 0.0,
+     "active": false,
+     "forced_zero": false,
+     "available": false,
+     "excluded": false
+    },
+    "fault": {
+     "penalty": 0.0,
+     "active": false,
+     "forced_zero": false,
+     "available": false,
+     "excluded": false
+    },
+    "bearing": {
+     "penalty": 20.0,
+     "active": true,
+     "forced_zero": false,
+     "available": true,
+     "excluded": false
+    },
+    "aux": {
+     "penalty": 0.0,
+     "active": false,
+     "forced_zero": false,
+     "available": true,
+     "excluded": false
+    }
+   },
+   "primary_concern": "BEARING: OR_014 at Outer Race (0.014in, -20.0 pts)",
+   "forced_zero": false,
+   "missing_sources": [
+    "rul",
+    "fault"
+   ],
+   "excluded_sources": []
+  },
+  "physics_consistency": {
+   "deviation_score": {
+    "baseline": 1.2243,
+    "scenario": 1.663
+   },
+   "parameters": {
+    "cht": {
+     "expected": 126.58,
+     "measured": 170.0,
+     "residual": 43.42,
+     "status": "REVIEW",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 21.45,
+     "baseline_status": "ELEVATED"
+    },
+    "egt": {
+     "expected": 810.02,
+     "measured": 824.1,
+     "residual": 14.08,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 14.08,
+     "baseline_status": "CONSISTENT"
+    },
+    "oil_pressure": {
+     "expected": 91.89,
+     "measured": 88.52,
+     "residual": -3.37,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": -3.37,
+     "baseline_status": "CONSISTENT"
+    },
+    "oil_temperature": {
+     "expected": 101.54,
+     "measured": 97.02,
+     "residual": -4.52,
+     "status": "CONSISTENT",
+     "method": "documented_baseline_v1",
+     "baseline_residual": -4.52,
+     "baseline_status": "CONSISTENT"
+    },
+    "fuel_flow": {
+     "expected": 3.8,
+     "measured": 8.3,
+     "residual": 4.5,
+     "status": "REVIEW",
+     "method": "documented_baseline_v1",
+     "baseline_residual": 4.5,
+     "baseline_status": "REVIEW"
+    }
+   }
+  },
+  "alerts": {
+   "simulation": true,
+   "baseline": null,
+   "scenario": null,
+   "change": "NONE"
+  },
+  "assumptions": [
+   "telemetry_readings does not persist throttle/altitude_m; RUL uses adapter defaults and physics estimates throttle from RPM (identical for baseline and scenario).",
+   "Vibration magnitude is derived from stored vibration_x/y/z."
+  ],
+  "model_versions": {
+   "rul_model": "unregistered",
+   "fault_model": "unregistered",
+   "bearing_model": "unregistered",
+   "aux_model": "unregistered"
+  },
+  "live_reference": null
+ },
+ "empty": {
+  "mode": "WHAT_IF",
+  "scenario_type": "PARAMETER_PERTURBATION",
+  "perturbation_count": 0,
+  "perturbation_window_config": 10,
+  "perturbation_method": "delta_applied_to_last_k_readings",
+  "engine_id": "eng-1",
+  "simulation_status": "INSUFFICIENT_DATA",
+  "baseline": null,
+  "scenario": null,
+  "delta": null,
+  "window": {
+   "total_readings": 0,
+   "perturbed_readings": 0,
+   "required_readings": {
+    "fault": 80,
+    "rul": 30
+   },
+   "loaded_target": 89,
+   "data_sufficiency": "INSUFFICIENT_DATA"
+  },
+  "model_results": null,
+  "health_fusion": null,
+  "physics_consistency": null,
+  "alerts": null,
+  "baseline_timestamp": null,
+  "message": "No telemetry recorded for this engine \u2014 current engine data unavailable.",
+  "model_versions": {
+   "rul_model": "unregistered",
+   "fault_model": "unregistered",
+   "bearing_model": "unregistered",
+   "aux_model": "unregistered"
+  },
+  "live_reference": null
+ }
+}

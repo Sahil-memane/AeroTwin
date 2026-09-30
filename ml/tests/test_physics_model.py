@@ -21,14 +21,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from training.physics_model import (
     OttoCycleSolver,
     ExpectedTelemetry,
-    PhysicsDeviation,
     compute_expected_telemetry,
     compute_physics_deviation,
     isa_temperature,
     isa_pressure,
     isa_density,
     EngineSpecs,
-    DEFAULT_SPECS,
 )
 
 

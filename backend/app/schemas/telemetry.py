@@ -16,8 +16,12 @@ class TelemetryIngestBase(BaseModel):
     vibration_x: Optional[float] = None
     vibration_y: Optional[float] = None
     vibration_z: Optional[float] = None
+    throttle: Optional[float] = None
+    altitude_m: Optional[float] = None
 
 class TelemetryReading(TelemetryIngestBase):
+    quality_status: Optional[str] = None
+
     class Config:
         from_attributes = True
 
@@ -26,6 +30,12 @@ class RulPrediction(BaseModel):
     ts: datetime
     rul_cycles: float
     degradation_index: float
+    # Accuracy-First Phase 2 — real split-conformal interval + what the
+    # service observed at prediction time. Optional/None on rows written
+    # before these columns existed.
+    rul_lower: Optional[float] = None
+    rul_upper: Optional[float] = None
+    status: Optional[str] = None
 
     class Config:
         from_attributes = True

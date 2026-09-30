@@ -3,3 +3,7 @@ chromadb
 python-dotenv
 langchain-text-splitters
 langchain-chroma
+langchain-core
+langchain-community
+langchain-google-genai
+pypdf

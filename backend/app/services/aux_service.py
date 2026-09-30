@@ -1,8 +1,7 @@
 import os
 import joblib
 import logging
-import numpy as np
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 from app.services.aux_adapter import aux_adapter
 

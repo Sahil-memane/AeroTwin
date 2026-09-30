@@ -11,3 +11,6 @@ from .bearing_health_reading import *
 from .aux_prediction import *
 from .maintenance_log import *
 from .alert import *
+from .health_score import *
+from .simulation_run import *
+from .physics_deviation_reading import *

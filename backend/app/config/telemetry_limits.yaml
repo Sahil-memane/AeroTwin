@@ -1,0 +1,130 @@
+# Telemetry validation limits — Accuracy-First Phase 1 (Data Quality Layer).
+#
+# Moved out of a hardcoded Python dict (backend/app/services/validation.py)
+# so engineering limits are documented and editable without a code change.
+# `validate_payload()` loads this file once at import time; the in-memory
+# shape it produces is unchanged, so every existing lookup site keeps
+# working without modification.
+#
+# Source of each bound, honestly:
+#   rpm: derived from the physics model's own Rotax-912-class engine specs
+#     (ml/training/physics_model/specs.py: rpm_idle=1400, rpm_max=5800) with
+#     headroom above rated max for an "impossible value" ceiling, not an
+#     operating-range check.
+#   cht/egt/oil_pressure/oil_temp/fuel_flow/vibration_*: carried over
+#     unchanged from the original hardcoded SENSOR_BOUNDS dict — these
+#     predate this file and were not independently re-derived here; flagged
+#     as [NEEDS VERIFICATION] against real Rotax 912 operating limits before
+#     being treated as authoritative rather than "plausible enough to catch
+#     garbage input."
+#   throttle/altitude_m/deviation_score/vibration_magnitude: derived fields
+#     already used by app/services/rul_adapter.py's PISTON_RANGES and the
+#     physics model's own operating envelope, not independently sourced here.
+
+sensor_bounds:
+  rpm:                 [0, 6500]
+  cht:                  [0, 400]      # °C — raised to accommodate fault injection
+  egt:                  [0, 1000]     # °C
+  oil_pressure:         [0, 150]      # psi
+  oil_temp:             [0, 200]      # °C
+  fuel_flow:            [0, 30]       # GPH
+  vibration_x:          [-50, 50]
+  vibration_y:          [-50, 50]
+  vibration_z:          [-50, 50]
+  throttle:             [0, 1.0]
+  altitude_m:           [-500, 15000]
+  deviation_score:      [0, 100]
+  vibration_magnitude:  [0, 100]
+
+required_fields: [engine_id, ts, rpm, cht, egt, oil_pressure, oil_temp, fuel_flow]
+
+# Phase 1 additions — none of these existed before this file.
+data_quality:
+  # A reading older than this (relative to server time when it's ingested)
+  # is flagged STALE rather than rejected outright — it's still real data,
+  # just not "current."
+  max_staleness_seconds: 30
+
+  # Per-field max plausible change between one reading and the very next
+  # one for the SAME engine. Exceeding this doesn't mean the reading is
+  # impossible on its own (both values may be individually in-range) — it
+  # means the transition between them isn't physically plausible for a
+  # ~0.5-1s telemetry interval. [NEEDS VERIFICATION]: these are
+  # conservative first-pass values (rough double the largest per-tick
+  # change the simulator's own smoothing ever produces), not derived from
+  # real flight-test data — tune once real data is available.
+  max_jump_per_reading:
+    rpm: 1500
+    cht: 30
+    egt: 80
+    oil_pressure: 40
+    oil_temp: 25
+    fuel_flow: 8
+
+# Accuracy-First Phase 3 (Fault Detection Reliability). [NEEDS
+# VERIFICATION]: initial defaults pending tuning against real evaluation
+# data — not claimed as validated.
+fault_detection:
+  # Stage-2 (multiclass isolation) abstains — returns "Unknown /
+  # insufficient evidence" instead of a falsely-confident single class —
+  # when its top probability is below this, OR the margin between its
+  # top-1 and top-2 candidates is below stage2_margin_threshold.
+  stage2_confidence_threshold: 0.45
+  stage2_margin_threshold: 0.15
+
+  # Temporal-consistency state machine (NORMAL -> ANOMALY_DETECTED ->
+  # FAULT_SUSPECTED -> FAULT_CONFIRMED, with a RECOVERED de-escalation) —
+  # counts are consecutive-reading streaks, not wall-clock time, since
+  # the telemetry rate is itself configurable.
+  state_machine:
+    anomaly_to_suspect_streak: 3    # total consecutive abnormal readings to reach FAULT_SUSPECTED
+    suspect_to_confirm_streak: 5    # total consecutive abnormal readings to reach FAULT_CONFIRMED
+    confirmed_to_recovered_streak: 5  # consecutive normal readings (while confirmed) to reach RECOVERED
+
+# Accuracy-First Phase 4 (Lightweight Physics Baseline). Each parameter's
+# own tolerance band comes from PARAMETER_TOLERANCES in
+# ml/training/physics_model/otto_cycle_solver.py (the real, already-
+# calibrated one-sigma bands the deviation_score itself is built from) —
+# these multipliers just say how many tolerance-widths away from
+# "expected" counts as each status.
+physics_consistency:
+  elevated_multiplier: 1.0  # |residual| beyond this many tolerance-widths -> ELEVATED
+  review_multiplier: 2.0    # -> REVIEW
+  anomaly_multiplier: 3.0   # -> ANOMALY (else CONSISTENT)
+
+# What-If parameter simulation (Mission Replay & What-If page).
+#
+# Scenario = the engine's most recent REAL readings, with the user's slider
+# change applied as a DELTA to only the last `perturbation_window` (K)
+# readings — never invented history, never written back to
+# telemetry_readings (see app/services/what_if_scenario.py).
+#
+# Why K (and why a delta, not an overwrite):
+#   The fault model needs a full 80-reading window and its temporal state
+#   machine (NORMAL -> ... -> FAULT_CONFIRMED) only escalates on CONSECUTIVE
+#   abnormal classifications (anomaly_to_suspect_streak=3,
+#   suspect_to_confirm_streak=5). One perturbed reading can therefore never
+#   read as a confirmed fault, but a scenario sustained over K readings can.
+#   K=10 comfortably exceeds the 5-reading confirm streak while keeping
+#   >= 70 of 80 window readings real. The window loaded is
+#   (fault window - 1 + K) readings, so each of the K perturbed readings
+#   gets its own fully-populated fault inference.
+#   Shifting by a delta (rather than overwriting all K with one constant)
+#   preserves the window's real variance/slope features, and makes a
+#   "sliders == current" scenario an exact no-op.
+#   [NEEDS VERIFICATION]: K=10 is a first-pass value — tune after validating
+#   what-if responses against known-fault data.
+what_if:
+  perturbation_window: 10
+  # Slider min/max are NOT defined here: they come from `sensor_bounds`
+  # above (single source of truth; backend validation uses the same bounds).
+  # Those are "impossible value" ceilings, not verified Rotax operating
+  # limits — [NEEDS VERIFICATION] before treating slider ends as safe
+  # operating range.
+  parameters:
+    rpm:             {telemetry_field: rpm,          unit: "RPM", step: 10}
+    cht:             {telemetry_field: cht,          unit: "°C",  step: 1}
+    egt:             {telemetry_field: egt,          unit: "°C",  step: 1}
+    oil_pressure:    {telemetry_field: oil_pressure, unit: "psi", step: 0.5}
+    oil_temperature: {telemetry_field: oil_temp,     unit: "°C",  step: 0.5}
+    fuel_flow:       {telemetry_field: fuel_flow,    unit: "GPH", step: 0.1}
