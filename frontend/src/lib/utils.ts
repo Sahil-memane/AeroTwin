@@ -21,6 +21,11 @@ export function fmtTime(ts: string): string {
   return parseBackendTs(ts).toLocaleTimeString();
 }
 
+/** "12 s", "8 min", "2 h 4 min" — seconds when the data is under a minute old. */
+export function fmtAgeShort(ms: number): string {
+  return ms < 60_000 ? `${Math.max(0, Math.round(ms / 1000))} s` : fmtAge(ms);
+}
+
 /** "8 min", "2 h 4 min" */
 export function fmtAge(ms: number): string {
   const min = Math.max(0, Math.round(ms / 60_000));

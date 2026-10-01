@@ -18,6 +18,8 @@ from app.schemas.engine import Engine as EngineSchema, EngineCreate, EngineUpdat
 from app.schemas.telemetry import TelemetryReading as TelemetryReadingSchema, RulPrediction as RulPredictionSchema
 from app.ws.connection_manager import manager as ws_manager
 from app.services.rul_service import rul_service
+from app.services.physics_model import DEFAULT_SPECS, PARAMETER_TOLERANCES
+from app.services.validation import SENSOR_BOUNDS
 
 router = APIRouter()
 
@@ -284,6 +286,74 @@ async def get_rul_status(
         "samples_collected": samples_collected,
         "samples_required": window_len,
         "last_prediction_ts": latest.ts if latest else None,
+    }
+
+
+# The layout is not a numeric field of EngineSpecs; it is stated in that class's docstring
+# ("4-cylinder horizontally-opposed boxer", Rotax 912/914-class) and reproduced here once,
+# with its source, so the 3D twin doesn't hardcode it.
+_ENGINE_LAYOUT = "horizontally_opposed"
+_SPEC_SOURCE = "ml/training/physics_model/specs.py (EngineSpecs, Rotax 912/914-class calibration)"
+
+
+def _per_cylinder_sensor_columns() -> list[str]:
+    """Telemetry columns that would carry a per-cylinder CHT/EGT (cht_1, egt2, ...).
+    Derived from the real table definition, so the answer changes if such sensors are ever added."""
+    import re
+
+    return sorted(c.name for c in TelemetryReadingModel.__table__.columns if re.fullmatch(r"(cht|egt)_?\d+", c.name))
+
+
+@router.get("/{engine_id}/twin")
+async def get_engine_twin_spec(
+    engine_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_active_user),
+):
+    """
+    Static description the 3D digital twin is built from: the engine's real
+    configuration (cylinder count, layout, displacement, speed envelope, rated
+    power), the configured sensor ranges, the physics tolerance bands, and which
+    sensors actually exist. Nothing here is a live reading — live values come from
+    the normal telemetry / prediction endpoints and the WebSocket stream.
+
+    `sensors.per_cylinder` is False today: the telemetry model carries ONE CHT and
+    ONE EGT for the whole engine, so a per-cylinder temperature must never be shown.
+    """
+    engine = (await db.execute(select(EngineModel).where(EngineModel.id == engine_id))).scalars().first()
+    if not engine:
+        raise HTTPException(status_code=404, detail="Engine not found")
+
+    per_cyl = _per_cylinder_sensor_columns()
+    return {
+        "engine_id": str(engine_id),
+        "serial_number": engine.serial_number,
+        "spec": {
+            "num_cylinders": DEFAULT_SPECS.num_cylinders,
+            "layout": _ENGINE_LAYOUT,
+            "displacement_cc": DEFAULT_SPECS.displacement_cc,
+            "compression_ratio": DEFAULT_SPECS.compression_ratio,
+            "rpm_idle": DEFAULT_SPECS.rpm_idle,
+            "rpm_cruise": DEFAULT_SPECS.rpm_cruise,
+            "rpm_max": DEFAULT_SPECS.rpm_max,
+            "rated_power_kw": DEFAULT_SPECS.rated_power_kw,
+            # EngineSpecs describes a "Rotax 912/914-class" engine (912 naturally aspirated, 914 turbocharged)
+            # and has no turbo field, so whether this engine has a turbo is UNKNOWN — never assumed.
+            "turbocharged": None,
+            "source": _SPEC_SOURCE,
+        },
+        # Configured "impossible value" ceilings (telemetry_limits.yaml), NOT verified operating limits.
+        "sensor_ranges": {k: list(v) for k, v in SENSOR_BOUNDS.items() if k in ("rpm", "cht", "egt", "oil_pressure", "oil_temp", "fuel_flow")},
+        "physics_tolerances": dict(PARAMETER_TOLERANCES),
+        "sensors": {
+            "per_cylinder": bool(per_cyl),
+            "per_cylinder_columns": per_cyl,
+            "note": (
+                "Per-cylinder CHT/EGT sensors are available."
+                if per_cyl
+                else "One CHT and one EGT for the whole engine; per-cylinder temperatures are not measured."
+            ),
+        },
     }
 
 

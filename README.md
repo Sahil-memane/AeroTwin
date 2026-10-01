@@ -38,7 +38,7 @@ npm ci && npm run dev
 python edge/telemetry_publisher/simulate.py
 ```
 
-Or run everything in containers: `docker compose -f infra/docker/docker-compose.yml up --build`.
+Or run everything in containers: `docker compose -f infra/docker/docker-compose.yml up --build`. The compose `simulator` service (dev/demo only) keeps the demo engine streaming so the dashboard and 3D Twin show LIVE data; don't deploy it to production.
 
 ### Tests and checks
 
@@ -55,6 +55,8 @@ Or run everything in containers: `docker compose -f infra/docker/docker-compose.
 
 - Live telemetry ingest (MQTT + REST) → Fault / RUL / Bearing / Auxiliary models → Health Fusion → alerts, streamed over WebSocket.
 - Mission Replay, preset mission simulation, and the **parameter What-If** (change RPM/CHT/EGT/oil/fuel and see how the real models respond — read-only, never touches live state).
+- **3D digital twin** (sidebar → *3D Twin*, `/engines/<id>/twin`): a WebGL engine model (selectable block, cylinders, bearing, gearbox; turbo shown as an unlit ghost) driven by live telemetry, physics-consistency status, model outputs and Health Fusion. Six view modes (Health, Thermal, Fault, Bearing, Physics↔AI, Vibration), a component inspector, and LIVE / REPLAY / WHAT-IF sources with a current-vs-scenario comparison; live state is never modified. Anything the backend doesn't provide shows "Unavailable" — per-cylinder temperatures are never shown because the engine has one CHT and one EGT sensor, and no health or physics values are computed in the browser.
+- Fleet dashboard rows update live over WebSocket (LIVE/STALE chip, age, RPM/CHT/EGT).
 - GARUDA Copilot (RAG) for explaining health, RUL and alerts.
 - Edge agent (ONNX Fault + RUL, offline buffering) in [`edge/`](edge/README.md).
 

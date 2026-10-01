@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTelemetryStore } from "@/store/telemetryStore";
 
@@ -12,6 +12,16 @@ const NAV_ITEMS = [
         <rect x="8.5" y="1.5" width="6" height="6" rx="0.5" />
         <rect x="1.5" y="8.5" width="6" height="6" rx="0.5" />
         <rect x="8.5" y="8.5" width="6" height="6" rx="0.5" />
+      </svg>
+    ),
+  },
+  {
+    to: "/twin",
+    label: "3D Twin",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
+        <path d="M8 1.5l6 3.2v6.6L8 14.5l-6-3.2V4.7l6-3.2z" />
+        <path d="M2 4.7l6 3.2 6-3.2M8 7.9v6.6" />
       </svg>
     ),
   },
@@ -51,6 +61,9 @@ export function Sidebar() {
   const { email, role, logout } = useAuth();
   const openAlertsCount = useTelemetryStore((s) => s.liveAlerts.filter((a) => !a.is_acknowledged).length);
   const initials = (email ?? "?").slice(0, 2).toUpperCase();
+  const { pathname } = useLocation();
+  // The twin page lives under /engines/:id/twin, so NavLink's own prefix match isn't enough.
+  const onTwin = pathname === "/twin" || /^\/engines\/[^/]+\/twin$/.test(pathname);
 
   return (
     <div className="flex w-[208px] flex-shrink-0 flex-col border-r border-border bg-surface2">
@@ -66,11 +79,12 @@ export function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            className={({ isActive }) =>
-              `flex items-center gap-2.5 rounded-sm border-l-2 px-3 py-2 text-[13px] font-medium ${
-                isActive ? "border-accent bg-surface3 text-text" : "border-transparent text-textMuted hover:text-text"
-              }`
-            }
+            className={({ isActive }) => {
+              const active = item.to === "/twin" ? onTwin : isActive;
+              return `flex items-center gap-2.5 rounded-sm border-l-2 px-3 py-2 text-[13px] font-medium ${
+                active ? "border-accent bg-surface3 text-text" : "border-transparent text-textMuted hover:text-text"
+              }`;
+            }}
           >
             {item.icon}
             {item.label}

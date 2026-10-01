@@ -6,7 +6,25 @@ import { NumberTicker } from "@/components/NumberTicker";
 import { LiveTicker } from "@/components/LiveTicker";
 import { alertsApi, dashboardApi, enginesApi } from "@/services/resources";
 import type { Alert, BearingHealthReading, DashboardSummary, Engine, FaultPrediction, HealthScoreResponse } from "@/types";
-import { fmtTime } from "@/lib/utils";
+import { fmtAgeShort, fmtTime, parseBackendTs } from "@/lib/utils";
+import { useEngineWebSocket } from "@/hooks/useEngineWebSocket";
+import { useTelemetryStore } from "@/store/telemetryStore";
+
+// Same threshold as the engine page and the 3D twin: no reading for this long => not streaming.
+const STALE_AFTER_MS = 5 * 60_000;
+// KPIs and the alert feed are REST data (no stream for them), so re-read them on a timer.
+const REFRESH_MS = 10_000;
+
+/** Keeps one engine's live WebSocket open while mounted; renders nothing. */
+function EngineLiveFeed({ engineId }: { engineId: string }) {
+  useEngineWebSocket(engineId);
+  return null;
+}
+
+function statusOfScore(score: number | null | undefined): "critical" | "warning" | "healthy" | undefined {
+  if (score === null || score === undefined) return undefined;
+  return score < 20 ? "critical" : score < 50 ? "warning" : "healthy";
+}
 
 interface FleetRow {
   engine: Engine;
@@ -45,6 +63,25 @@ export function Dashboard() {
   const [rows, setRows] = useState<FleetRow[]>([]);
   const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+  const liveEngines = useTelemetryStore((s) => s.engines);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Periodic refresh of the REST-only parts (KPIs, open alerts). Engine rows update from the WebSocket.
+  useEffect(() => {
+    const id = setInterval(() => {
+      Promise.all([dashboardApi.summary(), alertsApi.list({ is_acknowledged: false })])
+        .then(([s, a]) => {
+          setSummary(s);
+          setRecentAlerts(a.slice(0, 4));
+        })
+        .catch(() => undefined);
+    }, REFRESH_MS);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,6 +135,9 @@ export function Dashboard() {
 
   return (
     <AppShell breadcrumb={["Fleet", "Dashboard"]} scrollable={false}>
+      {rows.map((r) => (
+        <EngineLiveFeed key={r.engine.id} engineId={r.engine.id} />
+      ))}
       <LiveTicker items={tickerItems} />
       <div className="scrollbar-thin flex flex-grow flex-col gap-4 overflow-auto p-5">
         {/* KPI row */}
@@ -157,7 +197,7 @@ export function Dashboard() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  {["Engine", "Health", "RUL", "Fault", "Bearing", "Aux Risk", "Last Telemetry"].map((h) => (
+                  {["Engine", "Health", "RUL", "Fault", "Bearing", "Aux Risk", "Live Data"].map((h) => (
                     <th key={h} className="border-b border-border px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-textFaint">
                       {h}
                     </th>
@@ -180,21 +220,32 @@ export function Dashboard() {
                   </tr>
                 )}
                 {rows.map((row) => {
-                  const rulFactor = row.health?.contributing_factors.find((f) => f.source === "rul");
-                  const auxFactor = row.health?.contributing_factors.find((f) => f.source === "aux");
+                  // Live values (WebSocket) win over the REST snapshot loaded at page open.
+                  const live = liveEngines[row.engine.id];
+                  const score = live?.healthScore ? live.healthScore.combined_score : (row.health?.combined_score ?? null);
+                  const status = live?.healthScore ? statusOfScore(score) : row.health?.status;
+                  const factors = live?.healthScore?.contributing_factors ?? row.health?.contributing_factors ?? [];
+                  const fault = live?.fault ?? row.fault;
+                  const bearing = live?.bearing ?? row.bearing;
+                  const rulFactor = factors.find((f) => f.source === "rul");
+                  const auxFactor = factors.find((f) => f.source === "aux");
+                  const t = live?.telemetry;
+                  const ageMs = t ? nowMs - parseBackendTs(t.ts).getTime() : null;
+                  const dataState = !t ? "none" : ageMs !== null && ageMs > STALE_AFTER_MS ? "stale" : "live";
+                  const hasAnyData = row.hasAnyData || !!live;
                   return (
-                    <tr key={row.engine.id} className="hover:bg-surface2">
+                    <tr key={row.engine.id} className="hover:bg-surface2" data-testid={`fleet-row-${row.engine.id}`}>
                       <td className="border-b border-border px-3 py-2.5">
                         <Link to={`/engines/${row.engine.id}`} className="font-semibold text-text hover:text-accent hover:no-underline">
                           {row.engine.serial_number}
                         </Link>
                       </td>
                       <td className="border-b border-border px-3 py-2.5">
-                        {row.health && row.health.combined_score !== null ? (
+                        {score !== null && status ? (
                           <div className="flex items-center gap-2">
-                            <HealthScoreRing score={row.health.combined_score} size={30} strokeWidth={3.4} showLabel={false} />
-                            <span className={`font-mono font-semibold ${statusColor(row.health.status)}`}>
-                              {row.health.combined_score} · {row.health.status.toUpperCase()}
+                            <HealthScoreRing score={score} size={30} strokeWidth={3.4} showLabel={false} />
+                            <span className={`font-mono font-semibold ${statusColor(status)}`} data-testid={`fleet-health-${row.engine.id}`}>
+                              {score} · {status.toUpperCase()}
                             </span>
                           </div>
                         ) : (
@@ -202,37 +253,70 @@ export function Dashboard() {
                         )}
                       </td>
                       <td className="border-b border-border px-3 py-2.5 font-mono text-xs">
-                        {rulFactor ? `${(rulFactor as { rul_cycles?: number }).rul_cycles ?? "—"} cyc` : row.hasAnyData ? "nominal" : "—"}
+                        {rulFactor ? `${(rulFactor as { rul_cycles?: number }).rul_cycles ?? "—"} cyc` : hasAnyData ? "nominal" : "—"}
                       </td>
                       <td className="border-b border-border px-3 py-2.5">
-                        {row.fault ? (
+                        {fault ? (
                           <span
                             className="whitespace-nowrap rounded-sm border px-2 py-0.5 text-[11px] font-semibold"
                             style={{ color: "#6C8EBF", borderColor: "#6C8EBF", backgroundColor: "rgba(108,142,191,0.14)" }}
+                            title={fault.reliable === false ? "Advisory: too few measured input channels — not used in the health score" : undefined}
                           >
-                            {row.fault.fault_class} {row.fault.fault_class !== "No Failure" ? `${(row.fault.confidence * 100).toFixed(0)}%` : ""}
+                            {fault.fault_class} {fault.fault_class !== "No Failure" ? `${(fault.confidence * 100).toFixed(0)}%` : ""}
+                            {fault.reliable === false ? " · advisory" : ""}
                           </span>
                         ) : (
                           <span className="text-xs text-textFaint">—</span>
                         )}
                       </td>
                       <td className="border-b border-border px-3 py-2.5">
-                        {row.bearing ? (
+                        {bearing ? (
                           <span
                             className="rounded-sm border px-2 py-0.5 text-[11px] font-semibold"
                             style={{ color: "#4FA8B5", borderColor: "#4FA8B5", backgroundColor: "rgba(79,168,181,0.14)" }}
                           >
-                            {row.bearing.class_label}
+                            {bearing.class_label}
                           </span>
                         ) : (
                           <span className="text-xs text-textFaint">—</span>
                         )}
                       </td>
                       <td className="border-b border-border px-3 py-2.5 font-mono text-xs">
-                        {auxFactor ? `${(auxFactor as { failure_probability_pct?: number }).failure_probability_pct ?? "—"}%` : row.hasAnyData ? "low" : "—"}
+                        {live?.aux
+                          ? `${live.aux.failure_probability_pct.toFixed(0)}%`
+                          : auxFactor
+                            ? `${(auxFactor as { failure_probability_pct?: number }).failure_probability_pct ?? "—"}%`
+                            : hasAnyData
+                              ? "low"
+                              : "—"}
                       </td>
-                      <td className="border-b border-border px-3 py-2.5 font-mono text-xs text-textMuted">
-                        {row.health?.last_updated ? fmtTime(row.health.last_updated) : row.hasAnyData ? "—" : "no telemetry"}
+                      <td className="border-b border-border px-3 py-2.5" data-testid={`fleet-live-${row.engine.id}`}>
+                        {t ? (
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-bold tracking-wider ${
+                                  dataState === "live" ? "border-healthy text-healthy" : "border-warning text-warning"
+                                }`}
+                                data-testid={`fleet-chip-${row.engine.id}`}
+                              >
+                                {dataState === "live" ? "LIVE" : "STALE"}
+                              </span>
+                              <span className="font-mono text-[10px] text-textMuted">
+                                {dataState === "live" ? `${fmtAgeShort(ageMs ?? 0)} ago` : `last data ${fmtAgeShort(ageMs ?? 0)} ago`}
+                              </span>
+                            </div>
+                            <div className="font-mono text-[11px] text-textMuted">
+                              RPM {t.rpm.toFixed(0)} · CHT {t.cht.toFixed(0)}° · EGT {t.egt.toFixed(0)}°
+                            </div>
+                          </div>
+                        ) : row.health?.last_updated ? (
+                          <span className="font-mono text-xs text-textMuted">connecting… last score {fmtTime(row.health.last_updated)}</span>
+                        ) : hasAnyData ? (
+                          <span className="font-mono text-xs text-textMuted">—</span>
+                        ) : (
+                          <span className="font-mono text-xs text-textMuted">no telemetry</span>
+                        )}
                       </td>
                     </tr>
                   );

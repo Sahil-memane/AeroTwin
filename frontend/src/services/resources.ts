@@ -18,6 +18,7 @@ import type {
   TelemetryReading,
   TokenResponse,
   UAVAsset,
+  EngineTwinSpec,
   WhatIfConfig,
   WhatIfParam,
   WhatIfResponse,
@@ -35,6 +36,8 @@ export const enginesApi = {
   get: (engineId: string) => api.get<Engine>(`/engines/${engineId}`),
   healthScore: (engineId: string, historyLimit = 50) =>
     api.get<HealthScoreResponse>(`/engines/${engineId}/health-score`, { history_limit: historyLimit }),
+  // Static description the 3D twin is built from (real engine config, sensor ranges, which sensors exist).
+  twin: (engineId: string) => api.get<EngineTwinSpec>(`/engines/${engineId}/twin`),
   telemetryLatest: (engineId: string) => api.get<TelemetryReading>(`/engines/${engineId}/telemetry/latest`),
   // Newest stored reading at or before `ts` (What-If historical baseline picker).
   telemetryAt: (engineId: string, ts: string) =>

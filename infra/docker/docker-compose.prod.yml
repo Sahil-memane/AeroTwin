@@ -1,0 +1,118 @@
+# Production stack (single host, e.g. one GCP Compute Engine VM).
+#
+#   cp .env.prod.example .env.prod   # fill in every value
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+# Only Caddy (80/443) is exposed. db / redis / mqtt / backend live on the private network.
+# The backend MUST stay at one replica (in-memory model windows, see docs/DEPLOYMENT.md).
+# No bind-mounts, no simulator, no hot-reload.
+name: aerotwin-prod
+
+services:
+  db:
+    image: timescale/timescaledb:2.17.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aerotwin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-aerotwin}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mqtt:
+    image: eclipse-mosquitto:2.0.20
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto.passwd:/mosquitto/config/passwd:ro   # create with infra/gcp/mqtt-user.sh
+      - mqttdata:/mosquitto/data
+    # 8883 (authenticated edge listener) is published only if MQTT_EDGE_PORT is set, see .env.prod.example
+    ports:
+      - "${MQTT_EDGE_BIND:-127.0.0.1}:8883:8883"
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.backend
+    image: aerotwin-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-aerotwin}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-aerotwin}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (>=32 chars)}
+      EDGE_API_KEY: ${EDGE_API_KEY:?set EDGE_API_KEY (>=16 chars)}
+      CORS_ORIGINS: https://${DOMAIN:?set DOMAIN}
+      MQTT_BROKER_URL: mqtt://mqtt:1883
+      REDIS_URL: redis://redis:6379/0
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEM_LIMIT:-5g}   # 8 GB VM; use 2500m on a 4 GB VM
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: ../infra/docker/Dockerfile.frontend
+      args:
+        # Same-origin: Caddy routes /api to the backend, so the image works on any domain.
+        VITE_API_URL: /api/v1
+        VITE_WS_URL: /api/v1
+    image: aerotwin-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  pgdata:
+  redisdata:
+  mqttdata:
+  caddy_data:
+  caddy_config:

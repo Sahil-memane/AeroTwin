@@ -60,8 +60,15 @@ def run_sequence(readings: list[dict], simulation_id: str) -> list[dict]:
         # Same server-side physics deviation live ingestion computes
         # (ingestion.py) — RUL's #1-importance feature. Previously omitted
         # here, so replay/what-if RUL silently saw deviation_score=0.
+        physics = None
         try:
-            data["deviation_score"] = compute_consistency(data)[0]
+            deviation, consistency = compute_consistency(data)
+            data["deviation_score"] = deviation
+            # Kept per step so a replay can show expected / measured / residual / status for that moment.
+            physics = [
+                {"parameter": r.parameter, "expected": r.expected, "measured": r.measured, "residual": r.residual, "status": r.status}
+                for r in consistency
+            ]
         except Exception:
             pass
 
@@ -118,7 +125,11 @@ def run_sequence(readings: list[dict], simulation_id: str) -> list[dict]:
                 "oil_pressure": reading.get("oil_pressure"),
                 "oil_temp": reading.get("oil_temp"),
                 "fuel_flow": reading.get("fuel_flow"),
+                "vibration_x": reading.get("vibration_x"),
+                "vibration_y": reading.get("vibration_y"),
+                "vibration_z": reading.get("vibration_z"),
             },
+            "physics": physics,
             "rul": rul_result,
             "fault": fault_result,
             "bearing": bearing_result,

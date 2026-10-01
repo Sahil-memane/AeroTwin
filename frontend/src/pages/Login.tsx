@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@aerotwin-dev.com");
+  const [email, setEmail] = useState(import.meta.env.DEV ? "admin@aerotwin-dev.com" : "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
