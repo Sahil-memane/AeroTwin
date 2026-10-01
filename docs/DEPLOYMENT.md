@@ -10,6 +10,8 @@
 | MQTT broker (Mosquitto) | VM / HiveMQ Cloud | Telemetry ingest topic `aerotwin/telemetry/+`. Enable TLS + auth in production. |
 | Redis | managed | Provisioned but not yet used for runtime state (see limits). |
 
+See also [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) (single-VM Docker Compose production stack).
+
 CI (`.github/workflows/ci.yml`) must be green; `deploy.yml` then builds + pushes both images and pings the deploy hooks.
 
 ## Required backend environment
@@ -51,3 +53,5 @@ Create an `production` environment (Settings → Environments) and add required 
 | DB schema | add an Alembic migration; it runs on the next backend start (keep changes additive/nullable, as the existing ones are) |
 | Retrained model | replace the artifacts under `ml/training/...`, bump `model_registry`, redeploy |
 | Config only (staleness windows, CORS) | change the env var and restart — no rebuild |
+
+> **Dev-only service:** `infra/docker/docker-compose.yml` includes a `simulator` service (`Dockerfile.simulator`) that publishes synthetic telemetry for the demo engine. Remove it from any production deployment; real engines publish through the edge agent / MQTT.

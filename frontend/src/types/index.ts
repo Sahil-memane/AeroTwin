@@ -69,6 +69,8 @@ export interface TelemetryReading {
   vibration_x: number | null;
   vibration_y: number | null;
   vibration_z: number | null;
+  /** VALID / STALE / SUSPICIOUS — the data-quality classification the backend gave this reading. */
+  quality_status?: string | null;
 }
 
 export interface RulPrediction {
@@ -285,7 +287,12 @@ export interface SimulationStepResult {
     oil_pressure: number | null;
     oil_temp: number | null;
     fuel_flow: number | null;
+    vibration_x?: number | null;
+    vibration_y?: number | null;
+    vibration_z?: number | null;
   };
+  /** Physics consistency for THIS step (expected / measured / residual / status). */
+  physics?: { parameter: "cht" | "egt" | "oil_pressure" | "oil_temp" | "fuel_flow"; expected: number; measured: number; residual: number; status: PhysicsConsistencyStatus }[] | null;
   rul: { rul_cycles: number; rul_lower: number; rul_upper: number; degradation_index: number } | null;
   fault: FaultPrediction | null;
   bearing: BearingHealthReading | null;
@@ -504,4 +511,33 @@ export interface WhatIfResponse {
   assumptions?: string[];
   model_versions?: Record<string, string>;
   live_reference?: { combined_score: number; ts: string } | null;
+}
+
+// ── 3D digital twin (GET /engines/{id}/twin) ─────────────────────────
+export interface EngineTwinSpec {
+  engine_id: string;
+  serial_number: string;
+  spec: {
+    num_cylinders: number;
+    layout: "horizontally_opposed" | string;
+    displacement_cc: number;
+    compression_ratio: number;
+    rpm_idle: number;
+    rpm_cruise: number;
+    rpm_max: number;
+    rated_power_kw: number;
+    /** null = NOT declared in the engine spec (unknown) — never assume true or false. */
+    turbocharged: boolean | null;
+    /** Where these numbers come from (shown to the operator). */
+    source: string;
+  };
+  /** Configured sensor ranges [min, max] — impossible-value ceilings, not verified operating limits. */
+  sensor_ranges: Record<"rpm" | "cht" | "egt" | "oil_pressure" | "oil_temp" | "fuel_flow", [number, number]>;
+  physics_tolerances: Record<string, number>;
+  sensors: {
+    /** false => ONE CHT and ONE EGT for the whole engine; per-cylinder temperatures are not measured. */
+    per_cylinder: boolean;
+    per_cylinder_columns: string[];
+    note: string;
+  };
 }

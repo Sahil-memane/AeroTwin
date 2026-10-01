@@ -3,7 +3,18 @@ import { useAuthStore } from "@/store/authStore";
 import { useTelemetryStore } from "@/store/telemetryStore";
 import type { LiveMessage } from "@/types";
 
-const WS_URL = import.meta.env.VITE_WS_URL;
+const WS_URL_SETTING = import.meta.env.VITE_WS_URL;
+
+/**
+ * `VITE_WS_URL` may be absolute (ws://host:8000/api/v1) or a same-origin path (/api/v1) — the latter
+ * lets one image serve any domain behind a reverse proxy, resolved to ws(s):// from the page origin.
+ */
+export function resolveWsBase(setting: string, loc: { protocol: string; host: string }): string {
+  if (!setting.startsWith("/")) return setting;
+  return `${loc.protocol === "https:" ? "wss" : "ws"}://${loc.host}${setting}`;
+}
+
+const WS_URL = resolveWsBase(WS_URL_SETTING, window.location);
 
 /**
  * Opens the live WebSocket for one engine (`/engines/{id}/live`) and

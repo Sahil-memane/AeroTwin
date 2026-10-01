@@ -92,6 +92,24 @@ services:
       retries: 5
       start_period: 15s
 
+  # ── Demo telemetry simulator (DEV/DEMO ONLY) ──
+  # Keeps the demo engine streaming so the dashboard, engine page and 3D twin show live data
+  # continuously. Start it with:  docker compose up -d db redis mqtt simulator
+  # Stop it (e.g. when real telemetry arrives) with:  docker compose stop simulator
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.simulator
+    container_name: aerotwin-simulator
+    restart: unless-stopped
+    volumes:
+      - ../../edge/telemetry_publisher:/app/edge/telemetry_publisher:ro
+      - ../../ml/training:/app/ml/training:ro
+    depends_on:
+      mqtt:
+        condition: service_started
+    stdin_open: false
+
   # ── React frontend (built + served by nginx — no Node at runtime) ──
   frontend:
     build:

@@ -168,9 +168,11 @@ function ParamCard({
 
 interface WhatIfPanelProps {
   engineId: string;
+  /** Notified whenever the current result (or its staleness) changes; `null` when it is cleared. */
+  onResult?: (result: WhatIfResponse | null, stale: boolean) => void;
 }
 
-export function WhatIfPanel({ engineId }: WhatIfPanelProps) {
+export function WhatIfPanel({ engineId, onResult }: WhatIfPanelProps) {
   const [config, setConfig] = useState<WhatIfConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryReading | null>(null);
@@ -238,6 +240,11 @@ export function WhatIfPanel({ engineId }: WhatIfPanelProps) {
   const changedCount = Object.keys(changed).length;
   const stale = result !== null && ranKey !== JSON.stringify(changed);
   const canRun = !!current && !!config && changedCount > 0 && !calculating;
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
+  useEffect(() => {
+    onResultRef.current?.(result, stale);
+  }, [result, stale]);
   const isLatest = baselineChoice === LATEST;
   const ageMs = telemetry ? Date.now() - parseBackendTs(telemetry.ts).getTime() : 0;
 

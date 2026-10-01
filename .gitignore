@@ -49,3 +49,7 @@ scripts/load_test/engine_ids.json
 scripts/load_test/loadtest_results_*.csv
 .pytest_cache/
 .ruff_cache/
+
+# Production secrets
+.env.prod
+infra/docker/mosquitto.passwd

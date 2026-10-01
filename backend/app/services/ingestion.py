@@ -229,6 +229,8 @@ class MQTTIngestionService:
                 "vibration_z": data.get("vibration_z"),
                 "vibration_magnitude": data.get("vibration_magnitude"),
                 "deviation_score": data.get("deviation_score"),
+                # VALID / STALE / SUSPICIOUS (validate_payload) — the same value persisted on the row.
+                "quality_status": result.status.value,
             },
         }
         try:

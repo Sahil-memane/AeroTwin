@@ -641,6 +641,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/engines/{engine_id}/twin:
+    get:
+      tags:
+      - engines
+      summary: Get Engine Twin Spec
+      description: 'Static description the 3D digital twin is built from: the engine''s real
+
+        configuration (cylinder count, layout, displacement, speed envelope, rated
+
+        power), the configured sensor ranges, the physics tolerance bands, and which
+
+        sensors actually exist. Nothing here is a live reading — live values come from
+
+        the normal telemetry / prediction endpoints and the WebSocket stream.
+
+
+        `sensors.per_cylinder` is False today: the telemetry model carries ONE CHT and
+
+        ONE EGT for the whole engine, so a per-cylinder temperature must never be shown.'
+      operationId: get_engine_twin_spec_api_v1_engines__engine_id__twin_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: engine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Engine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/engines/{engine_id}/physics-consistency:
     get:
       tags:
@@ -689,32 +731,57 @@ paths:
       tags:
       - missions
       summary: List Missions
-      description: List all missions. Any authenticated user.
+      description: 'List all missions. Any authenticated user.
+
+
+        With `include_stats=true` each mission also carries how much telemetry is
+
+        stored for it (`reading_count`, `first_ts`, `last_ts`) — what a Replay
+
+        picker needs to tell a mission with data from an empty one. One grouped
+
+        query over just the listed missions, not one per row.'
       operationId: list_missions_api_v1_missions_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: include_stats
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Include Stats
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Mission'
                 type: array
+                items:
+                  $ref: '#/components/schemas/MissionListItem'
                 title: Response List Missions Api V1 Missions Get
-      security:
-      - OAuth2PasswordBearer: []
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
       - missions
       summary: Create Mission
       description: Create a new mission. Operator, Program Manager, or Admin.
       operationId: create_mission_api_v1_missions_post
+      security:
+      - OAuth2PasswordBearer: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/MissionCreate'
-        required: true
       responses:
         '201':
           description: Successful Response
@@ -728,8 +795,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - OAuth2PasswordBearer: []
   /api/v1/missions/{mission_id}:
     get:
       tags:
@@ -1658,6 +1723,16 @@ components:
           - type: string
           - type: 'null'
           title: State
+        input_coverage:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Input Coverage
+        reliable:
+          type: boolean
+          title: Reliable
+          description: 'False => advisory only: excluded from Health Fusion and alerts.'
+          readOnly: true
       type: object
       required:
       - ts
@@ -1667,6 +1742,7 @@ components:
       - fault_class
       - confidence
       - probabilities
+      - reliable
       title: FaultPrediction
     HTTPValidationError:
       properties:
@@ -1861,6 +1937,70 @@ components:
       - start_time
       - id
       title: MissionDetail
+    MissionListItem:
+      properties:
+        uav_asset_id:
+          type: string
+          format: uuid
+          title: Uav Asset Id
+        mission_type:
+          type: string
+          title: Mission Type
+        start_time:
+          type: string
+          format: date-time
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+        environmental_profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Environmental Profile
+        status:
+          type: string
+          title: Status
+          default: scheduled
+        id:
+          type: string
+          format: uuid
+          title: Id
+        reading_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reading Count
+        first_ts:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: First Ts
+        last_ts:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Ts
+      type: object
+      required:
+      - uav_asset_id
+      - mission_type
+      - start_time
+      - id
+      title: MissionListItem
+      description: 'A mission in the list view. The recorded-data fields are only filled
+
+        when the caller asks for them (`GET /missions?include_stats=true`) — they
+
+        need an aggregate over telemetry_readings, so the plain list stays cheap.
+
+        `reading_count` is 0 (not None) for a mission with no stored telemetry.'
     MissionUpdate:
       properties:
         status:

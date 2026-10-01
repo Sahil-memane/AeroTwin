@@ -11,7 +11,7 @@ import type {
   TelemetryReading,
 } from "@/types";
 
-interface EngineLiveState {
+export interface EngineLiveState {
   telemetry?: TelemetryReading;
   rul?: RulPrediction;
   fault?: FaultPrediction;
