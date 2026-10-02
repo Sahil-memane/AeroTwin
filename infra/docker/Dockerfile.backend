@@ -50,6 +50,7 @@ RUN pip install --no-cache-dir -r AeroTwin_Rag/requirements.txt
 COPY backend/ /app/
 COPY ml/training /ml/training
 COPY simulation /simulation
+COPY edge /app/edge
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
