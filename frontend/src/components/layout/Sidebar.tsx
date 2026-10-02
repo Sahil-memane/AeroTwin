@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTelemetryStore } from "@/store/telemetryStore";
+import { useState, useRef, useEffect } from "react";
 
 const NAV_ITEMS = [
   {
@@ -65,8 +66,21 @@ export function Sidebar() {
   // The twin page lives under /engines/:id/twin, so NavLink's own prefix match isn't enough.
   const onTwin = pathname === "/twin" || /^\/engines\/[^/]+\/twin$/.test(pathname);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="flex w-[208px] flex-shrink-0 flex-col border-r border-border bg-surface2">
+    <div className="flex w-[208px] flex-shrink-0 flex-col border-r border-border bg-surface2 relative">
       <div className="border-b border-border px-5 pb-4 pt-5">
         <div className="text-[15px] font-bold tracking-wide">
           AERO<span className="text-accent">TWIN</span>
@@ -99,18 +113,52 @@ export function Sidebar() {
 
       <div className="flex-grow" />
 
-      <button
-        onClick={logout}
-        className="flex items-center gap-2 border-t border-border px-4 py-3.5 text-left hover:bg-surface3"
-      >
-        <div className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-full border border-borderStrong bg-surface3 text-[11px] font-semibold">
-          {initials}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate text-xs font-semibold">{email}</div>
-          <div className="text-[10px] text-textMuted">{role?.replace(/_/g, " ")}</div>
-        </div>
-      </button>
+      {/* User Profile Popup Menu */}
+      <div ref={menuRef} className="relative">
+        {menuOpen && (
+          <div className="absolute bottom-[calc(100%+8px)] left-2 right-2 rounded-md border border-borderStrong bg-surface p-1.5 shadow-xl shadow-black/40 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200">
+            <div className="px-2 py-2 mb-1 border-b border-border">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-textMuted mb-0.5">Signed In As</div>
+              <div className="truncate text-xs font-medium text-text">{email}</div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                <span className="text-[10px] uppercase tracking-wider text-accent font-semibold">{role?.replace(/_/g, " ")}</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center gap-2.5 rounded-sm px-2 py-2 text-left text-xs font-medium text-text hover:bg-surface3 hover:text-critical transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              Sign Out
+            </button>
+          </div>
+        )}
+
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className={`flex w-full items-center gap-2 border-t border-border px-4 py-3.5 text-left transition-colors ${menuOpen ? 'bg-surface3' : 'hover:bg-surface3'}`}
+        >
+          <div className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-full border border-borderStrong bg-surface3 text-[11px] font-semibold">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs font-semibold">{email}</div>
+            <div className="text-[10px] text-textMuted truncate">{role?.replace(/_/g, " ")}</div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`text-textMuted transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`}>
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

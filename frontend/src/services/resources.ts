@@ -28,6 +28,8 @@ import type {
 export const authApi = {
   login: (email: string, password: string) =>
     api.post<TokenResponse>("/auth/login", { email, password }, { anonymous: true }),
+  register: (payload: { email: string; password: string; full_name: string; role: string }) =>
+    api.post<TokenResponse>("/auth/register", payload, { anonymous: true }),
 };
 
 // ── Engines ───────────────────────────────────────────────────────────
@@ -123,4 +125,36 @@ export const simulationApi = {
       },
       { timeoutMs },
     ),
+};
+
+// ── On-demand Simulator Control ───────────────────────────────────────
+// Controls the live-telemetry simulator (the MQTT publisher that drives the
+// dashboard).  Distinct from simulationApi (replay / what-if scenarios).
+export type SimulatorStatus = "running" | "stopped" | "already_stopped";
+
+export interface SimulatorStatusResponse {
+  engine_id: string;
+  status: "running" | "stopped" | "already_stopped";
+}
+
+
+export const simulatorApi = {
+  /** Start the simulator for engine (idempotent). */
+  start: (engineId: string) =>
+    api.post<SimulatorStatusResponse>(`/simulator/${engineId}/start`),
+  /** Explicitly stop the simulator. */
+  stop: (engineId: string) =>
+    api.post<SimulatorStatusResponse>(`/simulator/${engineId}/stop`),
+  /** Force-stop regardless of state (admin / emergency). */
+  forceStop: (engineId: string) =>
+    api.delete<SimulatorStatusResponse>(`/simulator/${engineId}`),
+  /** Lightweight heartbeat ping to keep the safety-net watchdog satisfied. */
+  heartbeat: (engineId: string) =>
+    api.post<{ ok: boolean }>(`/simulator/${engineId}/heartbeat`),
+  /** Stop ALL running simulators — called on logout and window close. */
+  stopAll: () =>
+    api.post<{ stopped: string[] }>(`/simulator/stop-all`),
+  /** Query the current state without any side-effects. */
+  status: (engineId: string) =>
+    api.get<SimulatorStatusResponse>(`/simulator/${engineId}/status`),
 };

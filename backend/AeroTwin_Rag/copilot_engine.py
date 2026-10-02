@@ -136,12 +136,25 @@ class _CopilotEngine:
                 if e.category != ErrorCategory.NOT_CONFIGURED:
                     last_error = e
                 continue  # not configured for this provider — skip quietly, not a "failure"
-            try:
-                return provider.generate(system_prompt, user_prompt)
-            except LLMProviderError as e:
-                logger.warning("LLM provider '%s' failed (%s): %s", name, e.category, e.technical_detail)
-                last_error = e
-                continue
+
+            # Retry transient UNAVAILABLE (503 overload) errors with backoff.
+            # All other error categories (invalid key, quota, bad model, etc.)
+            # are permanent and should not be retried.
+            _RETRY_DELAYS = (0, 1.5, 3.0)  # waits before attempt 1, 2, 3
+            for attempt, delay in enumerate(_RETRY_DELAYS):
+                if delay:
+                    logger.info("LLM provider '%s' UNAVAILABLE — retrying in %.1fs (attempt %d/3)", name, delay, attempt + 1)
+                    time.sleep(delay)
+                try:
+                    return provider.generate(system_prompt, user_prompt)
+                except LLMProviderError as e:
+                    if e.category == ErrorCategory.UNAVAILABLE and attempt < len(_RETRY_DELAYS) - 1:
+                        last_error = e
+                        continue  # retry
+                    # Permanent error or exhausted retries — log and try next provider
+                    logger.warning("LLM provider '%s' failed (%s): %s", name, e.category, e.technical_detail)
+                    last_error = e
+                    break
 
         raise last_error or LLMProviderError(ErrorCategory.NOT_CONFIGURED, "No LLM provider is configured")
 

@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from app.db.session import get_db
 from app.core.security import (
     verify_password,
+    get_password_hash,
     create_access_token,
     create_refresh_token,
     get_user_from_refresh_token,
@@ -60,6 +61,68 @@ async def login(
         refresh_token=refresh_token,
         expires_in=60 * 24 * 8 * 60,  # 8 days in seconds
         role=user.role,
+    )
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    role: str = "operator"
+
+
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/minute")
+async def register(
+    request: Request,
+    req: RegisterRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Self-service registration. Creates an operator account and returns tokens.
+    Rate-limited to 3 attempts per minute per IP.
+    """
+    # Validate role — only safe self-service roles allowed
+    allowed_roles = {"operator", "maintenance_engineer", "program_manager"}
+    if req.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Role must be one of: {', '.join(sorted(allowed_roles))}",
+        )
+
+    # Password strength check (min 12 chars enforced server-side too)
+    if len(req.password) < 12:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password must be at least 12 characters.",
+        )
+
+    # Check for duplicate email
+    existing = await db.execute(select(User).where(User.email == req.email))
+    if existing.scalars().first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
+        )
+
+    new_user = User(
+        email=req.email,
+        hashed_password=get_password_hash(req.password),
+        role=req.role,
+        is_active=True,
+    )
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    access_token = create_access_token(subject=str(new_user.id))
+    refresh_token = create_refresh_token(subject=str(new_user.id))
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=60 * 24 * 8 * 60,
+        role=new_user.role,
     )
 
 

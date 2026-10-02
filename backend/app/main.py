@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.api.v1 import (
     auth, engines, users, uav_assets, missions, dashboard,
     faults, bearing, telemetry, maintenance, models, alerts, copilot, auxiliary, simulation,
+    simulator_control,
 )
 from app.services.ingestion import ingestion_service
 
@@ -76,8 +77,9 @@ app.include_router(maintenance.router, prefix=f"{prefix}/engines",  tags=["maint
 app.include_router(telemetry.router,   prefix=prefix,               tags=["telemetry"])
 app.include_router(models.router,      prefix=f"{prefix}/models",   tags=["models"])
 app.include_router(alerts.router,      prefix=f"{prefix}/alerts",   tags=["alerts"])
-app.include_router(copilot.router,     prefix=f"{prefix}/copilot",  tags=["copilot"])
-app.include_router(simulation.router,  prefix=f"{prefix}/simulation", tags=["simulation"])
+app.include_router(copilot.router,           prefix=f"{prefix}/copilot",    tags=["copilot"])
+app.include_router(simulation.router,        prefix=f"{prefix}/simulation",  tags=["simulation"])
+app.include_router(simulator_control.router, prefix=f"{prefix}/simulator",   tags=["simulator-control"])
 
 
 # ── Health Check ──

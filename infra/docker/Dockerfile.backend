@@ -27,8 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # is ~570MB. Bumping the timeout (and retry count) fixes spurious
 # `ReadTimeoutError`s on an otherwise-fine, just-slow connection; it has
 # no effect at all on a fast one.
-ENV PIP_DEFAULT_TIMEOUT=180
-ENV PIP_RETRIES=10
+ENV PIP_DEFAULT_TIMEOUT=600
+ENV PIP_RETRIES=20
 
 # Install ML dependencies (heavy, cached separately)
 COPY backend/requirements-ml.txt .

@@ -1,10 +1,12 @@
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 interface TopbarProps {
   breadcrumb: string[];
+  headerRight?: ReactNode;
 }
 
-export function Topbar({ breadcrumb }: TopbarProps) {
+export function Topbar({ breadcrumb, headerRight }: TopbarProps) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -25,6 +27,8 @@ export function Topbar({ breadcrumb }: TopbarProps) {
         ))}
       </div>
       <div className="flex-grow" />
+      {/* Right-side slot: simulator controls (Dashboard) or nothing (other pages) */}
+      {headerRight && <div className="flex items-center gap-3">{headerRight}</div>}
       <div className="flex items-center gap-1.5 text-[11px] font-semibold text-textMuted">
         <span className="h-1.5 w-1.5 rounded-full bg-healthy" />
         LIVE

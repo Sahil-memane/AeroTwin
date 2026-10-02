@@ -63,21 +63,25 @@ services:
     volumes:
       - ../../backend:/app
       - ../../ml:/ml
-      # Phase 6's simulation package lives at the repo root, a sibling of
-      # backend/ and ml/ — app/api/v1/simulation.py resolves it the same
-      # way bearing_service.py resolves ml/ (walking up from /app to the
-      # container root), so it needs the same kind of mount or replay/
-      # what-if 404s with ModuleNotFoundError inside the container even
-      # though it works fine when run outside Docker.
       - ../../simulation:/simulation
+      # Mount Docker socket so the backend can start/stop the simulator container on demand.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/aerotwin
       JWT_SECRET: local-dev-secret-change-in-production
       MQTT_BROKER_URL: mqtt://mqtt:1883
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: development
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: gemini-3.5-flash
       # dev only: hot-reload the bind-mounted source (never set in a deployed image)
       UVICORN_RELOAD: "1"
+      # On-demand simulator: backend controls the simulator container via Docker socket.
+      SIMULATOR_USE_DOCKER: "true"
+      SIMULATOR_CONTAINER_NAME: aerotwin-simulator
+      # Network name = <compose-project-name>_default  (project = folder name = docker)
+      DOCKER_NETWORK: aerotwin_default
+      SIMULATOR_IMAGE: aerotwin-simulator:latest
     depends_on:
       db:
         condition: service_healthy
@@ -92,19 +96,25 @@ services:
       retries: 5
       start_period: 15s
 
-  # ── Demo telemetry simulator (DEV/DEMO ONLY) ──
-  # Keeps the demo engine streaming so the dashboard, engine page and 3D twin show live data
-  # continuously. Start it with:  docker compose up -d db redis mqtt simulator
-  # Stop it (e.g. when real telemetry arrives) with:  docker compose stop simulator
+  # ── On-demand simulator (DEV/DEMO) ──────────────────────────────────────
+  # NOT auto-started by `docker compose up`.  The backend API starts/stops it
+  # when a user clicks "START SIM" on the Dashboard (POST /api/v1/simulator/start).
+  #
+  # Build context = repo root so the prod Dockerfile can COPY source into the
+  # image, making it self-contained (no bind mounts).  The backend starts this
+  # via the Docker socket, so it must be a standalone image.
   simulator:
     build:
-      context: .
-      dockerfile: Dockerfile.simulator
+      context: ../..                        # repo root
+      dockerfile: infra/docker/Dockerfile.simulator
+    image: aerotwin-simulator:latest
     container_name: aerotwin-simulator
-    restart: unless-stopped
-    volumes:
-      - ../../edge/telemetry_publisher:/app/edge/telemetry_publisher:ro
-      - ../../ml/training:/app/ml/training:ro
+    profiles:
+      - demo          # excluded from default `up`; started on-demand by the backend API
+    restart: "no"     # do NOT auto-restart — the backend controls the lifecycle
+    environment:
+      MQTT_HOST: mqtt
+      ENGINE_ID: ${ENGINE_ID:-00000000-0000-0000-0000-000000000001}
     depends_on:
       mqtt:
         condition: service_started

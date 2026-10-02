@@ -79,17 +79,21 @@ interface Message {
 
 interface CopilotPanelProps {
   engineId?: string;
+  engineSerial?: string;
   defaultExpanded?: boolean;
 }
 
 // Accuracy-First Phase 6 — pre-fills and sends a common question with
 // one click. No new backend endpoint or per-button AI system: each one
 // just calls the same copilotApi.query() any typed message would.
+// Queries use {ENGINE} as a placeholder replaced at click-time with the
+// real serial number (e.g. "for engine SN-001") so the backend intent
+// classifier can identify the engine directly from the message text.
 const QUICK_ACTIONS: { label: string; query: string }[] = [
-  { label: "Explain Current Health", query: "Explain the current health score for this engine." },
-  { label: "Why Did Health Drop?", query: "Why did the health score drop?" },
-  { label: "Explain RUL", query: "Explain what RUL means and how it's calculated." },
-  { label: "Explain Active Alerts", query: "Explain any active alerts for this engine." },
+  { label: "Explain Current Health", query: "Explain the current health score for {ENGINE}." },
+  { label: "Why Did Health Drop?", query: "Why did the health score drop for {ENGINE}?" },
+  { label: "Explain RUL", query: "Explain what RUL means and how it's calculated for {ENGINE}." },
+  { label: "Explain Active Alerts", query: "Explain any active alerts for {ENGINE}." },
 ];
 
 /** Character-reveal effect, in the spirit of Magic UI's "Typing Animation"
@@ -143,7 +147,7 @@ function AssistantBubble({ text, isNew }: { text: string; isNew: boolean }) {
   );
 }
 
-export function CopilotPanel({ engineId, defaultExpanded = false }: CopilotPanelProps) {
+export function CopilotPanel({ engineId, engineSerial, defaultExpanded = false }: CopilotPanelProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -231,17 +235,38 @@ export function CopilotPanel({ engineId, defaultExpanded = false }: CopilotPanel
         {error && <div className="text-xs text-critical">{error}</div>}
       </div>
 
-      <div className="flex flex-wrap gap-1.5 border-t border-border px-3 pt-2.5">
-        {QUICK_ACTIONS.map((qa) => (
-          <button
-            key={qa.label}
-            onClick={() => sendText(qa.query)}
-            disabled={loading}
-            className="rounded-full border border-borderStrong bg-surface2 px-2.5 py-1 text-[10px] font-semibold text-textMuted hover:border-accent hover:text-accent disabled:opacity-50"
-          >
-            {qa.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-2 border-t border-border px-3 pt-2.5 pb-1">
+        <div className="flex flex-wrap gap-1.5">
+          {QUICK_ACTIONS.map((qa) => (
+            <button
+              key={qa.label}
+              onClick={() => {
+                if (engineSerial) {
+                  // On an engine page: replace the placeholder with the real serial and
+                  // send immediately — the backend will resolve the engine from the text.
+                  sendText(qa.query.replace("{ENGINE}", `engine ${engineSerial}`));
+                } else {
+                  // On the Dashboard (no engine context): pre-fill the input so the
+                  // user can type in the serial number before submitting.
+                  setInput(qa.query.replace("{ENGINE}", "engine "));
+                }
+              }}
+              disabled={loading}
+              className="rounded-full border border-borderStrong bg-surface2 px-2.5 py-1 text-[10px] font-semibold text-textMuted hover:border-accent hover:text-accent disabled:opacity-50"
+            >
+              {qa.label}
+            </button>
+          ))}
+        </div>
+        {engineSerial ? (
+          <div className="text-[10px] text-textFaint">
+            Context: engine <span className="font-semibold text-accent">{engineSerial}</span>
+          </div>
+        ) : (
+          <div className="text-[10px] text-textFaint italic">
+            Note: Include the engine serial (e.g. SN-001) in your prompt for live data.
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 p-3">
@@ -249,8 +274,9 @@ export function CopilotPanel({ engineId, defaultExpanded = false }: CopilotPanel
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask about this engine…"
+          placeholder={engineId ? "Ask about this engine…" : "Type your question (include engine ID for live data)…"}
           className="flex-grow rounded-sm border border-borderStrong bg-surface2 px-2.5 py-2 text-xs outline-none focus:border-accent"
+          disabled={loading}
         />
         <button
           onClick={send}

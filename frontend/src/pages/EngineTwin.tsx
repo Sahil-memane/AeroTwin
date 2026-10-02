@@ -131,7 +131,7 @@ export function EngineTwin() {
   const replayReady = replay.frames.length > 0;
 
   return (
-    <AppShell breadcrumb={["Fleet", "3D Twin", serial ?? engineId.slice(0, 8)]} copilotEngineId={engineId}>
+    <AppShell breadcrumb={["Fleet", "3D Twin", serial ?? engineId.slice(0, 8)]} copilotEngineId={engineId} copilotEngineSerial={serial ?? undefined}>
       <div className="flex min-w-0 flex-col gap-3.5 p-5 lg:pr-12">
         {/* Header */}
         <div className="flex flex-wrap items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3">

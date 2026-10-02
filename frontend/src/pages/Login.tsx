@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+
+// ── Guest account (intentionally visible — read-only operator demo) ──────────
+const GUEST_EMAIL = "guest@aerotwin.demo";
+const GUEST_PASSWORD = "guest-aerotwin-2026";
 
 export function Login() {
   const { login } = useAuth();
@@ -9,6 +13,8 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,6 +26,18 @@ export function Login() {
       navigate("/dashboard", { replace: true });
     } else {
       setError(result.error);
+    }
+  }
+
+  async function handleGuestLogin() {
+    setGuestError(null);
+    setGuestLoading(true);
+    const result = await login(GUEST_EMAIL, GUEST_PASSWORD);
+    setGuestLoading(false);
+    if (result.ok) {
+      navigate("/dashboard", { replace: true });
+    } else {
+      setGuestError(result.error ?? "Guest login unavailable.");
     }
   }
 
@@ -69,8 +87,42 @@ export function Login() {
           {loading ? "Signing in…" : "Sign In"}
         </button>
 
+        {/* OR divider */}
+        <div className="relative flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10px] uppercase tracking-widest text-textFaint">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* Guest / bypass button */}
+        <div className="flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={guestLoading}
+            className="flex items-center justify-center gap-2 rounded-sm border border-border bg-surface2 py-2.5 text-sm font-semibold text-textMuted hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+          >
+            {guestLoading ? (
+              "Signing in as guest…"
+            ) : (
+              <>
+                <span className="font-mono text-[10px]">⬡</span>
+                Continue as Guest &nbsp;<span className="text-[10px] opacity-60">(Read-Only Demo)</span>
+              </>
+            )}
+          </button>
+          {guestError && <div className="text-xs text-critical text-center">{guestError}</div>}
+        </div>
+
         <div className="text-center text-[11px] text-textFaint">
           Access requires an operator, maintenance engineer, program manager, or admin role.
+        </div>
+
+        <div className="text-center text-[11px] text-textFaint">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="text-accent hover:underline">
+            Create one
+          </Link>
         </div>
       </form>
     </div>

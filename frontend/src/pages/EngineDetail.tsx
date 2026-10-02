@@ -154,6 +154,7 @@ export function EngineDetail() {
     <AppShell
       breadcrumb={["Fleet", "Dashboard", engine?.serial_number ?? engineId.slice(0, 8)]}
       copilotEngineId={engineId}
+      copilotEngineSerial={engine?.serial_number}
       copilotExpanded
     >
       <div className="flex min-w-0 flex-col gap-3.5 p-5">

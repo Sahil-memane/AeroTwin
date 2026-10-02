@@ -15,10 +15,10 @@
 **/.venv
 **/.env
 
-# Not part of the backend image
+# Not part of the backend image (backend Dockerfile never COPYs these,
+# so excluding them here is safe for backend builds and required for simulator builds)
 frontend
 docs
-edge
 infra
 scripts
 backend/tests
@@ -26,6 +26,7 @@ backend/.coveragerc
 
 # Training-time only material (datasets, plots) — inference needs just the
 # saved models, feature/label JSON and the physics-model code.
+# ml/training/ IS included — the simulator imports physics_model.py from there.
 ml/data
 ml/models
 ml/tests

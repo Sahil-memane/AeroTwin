@@ -1,0 +1,34 @@
+# Per-Dockerfile dockerignore for Dockerfile.simulator
+# Docker uses this file instead of the repo-root .dockerignore when building
+# with this Dockerfile (requires Docker 23+ / BuildKit).
+
+.git
+.github
+.vscode
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/node_modules
+**/.venv
+**/.env
+
+# Skip things the simulator doesn't need
+frontend
+docs
+infra
+scripts
+backend
+simulation
+
+# ML: keep training code (physics model), skip heavy data/artifacts
+ml/data
+ml/models
+ml/tests
+ml/training/**/*.png
+ml/training/**/*.csv
+ml/training/**/*.txt
+!ml/training/**/requirements.txt
+
+# edge: keep telemetry_publisher only
+edge/
+!edge/telemetry_publisher/

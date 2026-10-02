@@ -18,9 +18,9 @@ export default {
         surface3: "#1D2330",
         border: "#262D38",
         borderStrong: "#333D4A",
-        text: "#E4E7EB",
-        textMuted: "#8B93A1",
-        textFaint: "#4A515C",
+        text: "#E8EAED",
+        textMuted: "#A0A8B5",
+        textFaint: "#8C94A3",
 
         healthy: "#4C9A6A",
         healthyBg: "rgba(76,154,106,0.14)",

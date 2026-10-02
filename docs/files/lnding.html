@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #0A0E14;
+        color: #FFFFFF;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Radar scanline animation */
+    @keyframes hudScan {
+      0% { transform: translateY(-100%); opacity: 0; }
+      50% { opacity: 0.35; }
+      100% { transform: translateY(350%); opacity: 0; }
+    }
+    .hud-scanner {
+      animation: hudScan 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    /* Beacon pulse */
+    @keyframes pingSlow {
+      0% { transform: scale(1); opacity: 0.9; }
+      75%, 100% { transform: scale(2.2); opacity: 0; }
+    }
+    .beacon-pulse {
+      animation: pingSlow 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    /* Glow transitions */
+    .glow-cyan-hover:hover {
+      box-shadow: 0 0 25px rgba(68, 226, 205, 0.35), 0 0 50px rgba(91, 141, 239, 0.2);
+    }
+    .dashboard-glow:hover {
+      box-shadow: 0 10px 40px -10px rgba(68, 226, 205, 0.15), 0 0 2px 1px rgba(68, 226, 205, 0.3);
+    }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: "#5B8DEF",
+              hover: "#4d7ddc",
+              cyan: "#44E2CD"
+            },
+            muted: "#8B93A3",
+            subtle: "#6B7280",
+            dark: {
+              bg: "#0A0E14",
+              card: "#12161F",
+              border: "#1E2330",
+              frame: "#2A2F3A"
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-[#0A0E14] text-white font-sans antialiased selection:bg-[#5B8DEF]/30 selection:text-white">
+<!-- 1. NAVBAR -->
+<header class="fixed top-0 w-full z-50 bg-[#0A0E14]/85 backdrop-blur-md border-b border-[#1E2330]/60 transition-all">
+<div class="max-w-7xl mx-auto h-20 px-6 lg:px-8 flex items-center justify-between">
+<!-- Minimal Wordmark Lockup -->
+<a class="flex items-center gap-2.5 focus:outline-none group" href="#">
+<span class="w-2.5 h-2.5 rounded-full bg-[#44E2CD] shadow-[0_0_10px_#44E2CD]"></span>
+<div class="tracking-[0.2em] text-sm uppercase font-bold">
+<span class="text-white">AERO</span><span class="text-[#5B8DEF]">TWIN</span>
+<span class="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-medium tracking-widest text-[#44E2CD] border border-[#44E2CD]/40 rounded bg-[#44E2CD]/10">MIL-STD</span>
+</div>
+</a>
+<!-- Center Links (Capital Typography) -->
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-xs uppercase tracking-[0.18em] font-semibold text-[#8B93A3] hover:text-[#44E2CD] transition-colors" href="#">PRODUCT</a>
+<a class="text-xs uppercase tracking-[0.18em] font-semibold text-[#8B93A3] hover:text-[#44E2CD] transition-colors" href="#">ARCHITECTURE</a>
+<a class="text-xs uppercase tracking-[0.18em] font-semibold text-[#8B93A3] hover:text-[#44E2CD] transition-colors" href="#">DOCUMENTATION</a>
+</nav>
+<!-- Right CTAs -->
+<div class="flex items-center gap-6">
+<a class="hidden sm:inline-block text-xs uppercase tracking-[0.18em] font-semibold text-[#8B93A3] hover:text-white transition-colors" href="#">SIGN IN</a>
+<a class="inline-flex items-center justify-center px-5 py-2.5 text-xs uppercase tracking-[0.18em] font-bold text-white bg-[#5B8DEF] hover:bg-[#4d7ddc] hover:shadow-[0_0_20px_rgba(91,141,239,0.4)] rounded transition-all duration-300" href="#">
+          REQUEST ACCESS
+        </a>
+</div>
+</div>
+</header>
+<main class="w-full pt-20 bg-[#0A0E14] overflow-hidden">
+<!-- 2. HERO SECTION WITH PARALLAX 3D TILT & EXPANDED X-RAY DRONE -->
+<section class="relative max-w-7xl mx-auto px-6 lg:px-8 pt-12 lg:pt-20 pb-20" id="hero-stage">
+<!-- Subtle HUD background grid coordinates -->
+<div class="absolute inset-0 pointer-events-none opacity-20">
+<div class="w-full h-full" style="background-image: linear-gradient(to right, #1E2330 1px, transparent 1px), linear-gradient(to bottom, #1E2330 1px, transparent 1px); background-size: 80px 80px;"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center relative z-10">
+<!-- Left Column: Copy & Primary CTA -->
+<div class="lg:col-span-5 flex flex-col justify-center">
+<div class="inline-flex items-center gap-2 mb-4">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#44E2CD]"></span>
+<span class="text-[11px] font-mono tracking-[0.25em] uppercase text-[#44E2CD]">AEROSPACE DIGITAL TWIN · CORE V3.4</span>
+</div>
+<h1 class="text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold tracking-tight text-white leading-[1.08] mb-6 uppercase">
+            SEE ENGINE FAILURE BEFORE IT HAPPENS.
+          </h1>
+<p class="text-sm sm:text-base text-[#8B93A3] leading-relaxed max-w-xl mb-8 font-normal">
+            Real-time physics-informed digital twin monitoring for tactical UAV powertrains. Predict degradation, prevent loss of airframe, and ensure absolute mission readiness.
+          </p>
+<div class="flex flex-wrap items-center gap-4">
+<a class="inline-flex items-center justify-center px-7 py-3.5 rounded text-xs uppercase tracking-[0.2em] font-bold text-white bg-[#5B8DEF] hover:bg-[#4d7ddc] transition-all duration-300 glow-cyan-hover shadow-lg shadow-[#5B8DEF]/20" href="#">
+              REQUEST ACCESS
+            </a>
+<div class="flex items-center gap-3 px-4 py-3 rounded border border-[#1E2330] bg-[#12161F]/60 text-xs font-mono text-[#8B93A3]">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="tracking-wider uppercase text-[11px] text-white">LIVE TELEMETRY FEED</span>
+</div>
+</div>
+<!-- Realtime Coordinate Readout linked to mouse motion -->
+<div class="mt-10 pt-6 border-t border-[#1E2330]/70 grid grid-cols-3 gap-4 text-xs font-mono">
+<div>
+<div class="text-[10px] uppercase tracking-wider text-[#6B7280]">AZIMUTH</div>
+<div class="text-white font-medium tracking-tight" id="telemetry-az">042.8° N</div>
+</div>
+<div>
+<div class="text-[10px] uppercase tracking-wider text-[#6B7280]">ELEVATION</div>
+<div class="text-white font-medium tracking-tight" id="telemetry-el">+14.2°</div>
+</div>
+<div>
+<div class="text-[10px] uppercase tracking-wider text-[#6B7280]">DEFENSE GRID</div>
+<div class="text-[#44E2CD] font-medium tracking-tight" id="telemetry-grid">UTM-32U-44</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Hero Visual Clean Render (Enlarged + Interactive 3D Canvas) -->
+<div class="lg:col-span-7 w-full flex items-center justify-center">
+<div class="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[1.45/1] flex items-center justify-center overflow-visible select-none" id="tilt-card-container" style="perspective: 1200px;">
+<!-- Inner 3D tracking card -->
+<div class="relative w-full h-full transition-transform duration-200 ease-out flex items-center justify-center" id="tilt-card" style="transform-style: preserve-3d;">
+<!-- Seamless radial fade background mask to melt perfectly into #0A0E14 -->
+<div class="absolute inset-0 z-10 pointer-events-none" style="background: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 45%, #0A0E14 98%);"></div>
+<!-- HUD Grid Reticle Overlay -->
+<div class="absolute inset-4 z-10 pointer-events-none border border-[#1E2330]/40 rounded-lg">
+<div class="absolute top-2 left-2 text-[9px] font-mono text-[#44E2CD]/60 tracking-widest uppercase">SYS.OPTIC // FLIR_RADAR_01</div>
+<div class="absolute bottom-2 right-2 text-[9px] font-mono text-[#8B93A3] tracking-widest uppercase">SCALE: 1:1 TACTICAL</div>
+<!-- Reticle corner brackets -->
+<div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#44E2CD]/70"></div>
+<div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#44E2CD]/70"></div>
+<div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#44E2CD]/70"></div>
+<div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#44E2CD]/70"></div>
+</div>
+<!-- Animated Scanline Bar -->
+<div class="hud-scanner absolute left-0 right-0 h-24 bg-gradient-to-b from-transparent via-[#44E2CD]/10 to-transparent pointer-events-none z-10"></div>
+<!-- Scaled Up Drone X-Ray Visual (Noticeably Larger, high-fidelity mechanical cutaway) -->
+<div class="w-full h-full flex items-center justify-center p-0 scale-110 lg:scale-115">
+<img alt="AeroTwin Tactical UAV Mechanical Cutaway Digital Twin" class="w-full h-full object-contain filter contrast-110 brightness-105 pointer-events-none" id="drone-image" src="https://lh3.googleusercontent.com/aida/AEtjO1WmQXZEaM5tOlEgPqj__Zc5auEbKZvszlPALApvOBVkcVvNj5FELKu1Jg-PXvsRwyFIbzHnP0hFSTZevltG6y3eQK6TKvfqxkAw57VL2AhRZeRejEpDPH4dXVd10simFKqsM5XIujx9aPNxHsG_tgPP1n27krVusEm1_i9YX5p4uC00AZEw1QbPpe7p1-HJ1cpVGBF-8Widcf5vzwDFwJUe4yh6M0AIp35m4FdTW-TUoFgRzLrBRmPLPEyr"/>
+</div>
+<!-- Interactive Sensor Callout 1: Engine Bay (Powertrain) -->
+<div class="group absolute top-[44%] left-[30%] z-20 cursor-pointer" style="transform: translateZ(35px);">
+<div class="relative flex items-center justify-center">
+<span class="beacon-pulse absolute w-6 h-6 rounded-full bg-[#44E2CD]/40"></span>
+<span class="w-3 h-3 rounded-full bg-[#44E2CD] shadow-[0_0_12px_#44E2CD] border border-white"></span>
+</div>
+<!-- Tooltip Pin -->
+<div class="opacity-90 group-hover:opacity-100 group-hover:scale-105 absolute left-6 -top-5 transition-all duration-200 pointer-events-auto bg-[#12161F]/95 backdrop-blur-md border border-[#44E2CD]/60 px-3 py-2 rounded shadow-2xl min-w-[170px]">
+<div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#44E2CD] font-bold">
+<span>BAY 01 // TURBINE</span>
+<span class="text-white">NOMINAL</span>
+</div>
+<div class="text-[11px] font-mono text-white font-semibold mt-0.5">VIBRATION: 0.04g · 88°C</div>
+<div class="text-[9px] font-mono text-[#8B93A3] mt-0.5 tracking-wide">RUL ESTIMATE: +310 HRS</div>
+</div>
+</div>
+<!-- Interactive Sensor Callout 2: Fuel & Avionics Core -->
+<div class="group absolute top-[28%] right-[32%] z-20 cursor-pointer" style="transform: translateZ(40px);">
+<div class="relative flex items-center justify-center">
+<span class="beacon-pulse absolute w-6 h-6 rounded-full bg-[#5B8DEF]/40" style="animation-delay: 1.2s;"></span>
+<span class="w-3 h-3 rounded-full bg-[#5B8DEF] shadow-[0_0_12px_#5B8DEF] border border-white"></span>
+</div>
+<!-- Tooltip Pin -->
+<div class="opacity-90 group-hover:opacity-100 group-hover:scale-105 absolute right-6 -top-5 transition-all duration-200 pointer-events-auto bg-[#12161F]/95 backdrop-blur-md border border-[#5B8DEF]/60 px-3 py-2 rounded shadow-2xl min-w-[170px] text-right">
+<div class="flex items-center justify-between flex-row-reverse text-[10px] font-mono uppercase tracking-wider text-[#5B8DEF] font-bold">
+<span>AVIONICS BUS</span>
+<span class="text-white">SYNCHED</span>
+</div>
+<div class="text-[11px] font-mono text-white font-semibold mt-0.5">28.4V · 4.2 BAR RAIL</div>
+<div class="text-[9px] font-mono text-[#8B93A3] mt-0.5 tracking-wide">EDGE MODEL ACTIVE</div>
+</div>
+</div>
+<!-- Interactive Sensor Callout 3: Wing Airframe Strain -->
+<div class="group absolute bottom-[24%] right-[22%] z-20 cursor-pointer" style="transform: translateZ(25px);">
+<div class="relative flex items-center justify-center">
+<span class="beacon-pulse absolute w-5 h-5 rounded-full bg-[#44E2CD]/30" style="animation-delay: 0.6s;"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#44E2CD] shadow-[0_0_8px_#44E2CD] border border-white"></span>
+</div>
+<!-- Tooltip Pin -->
+<div class="opacity-0 group-hover:opacity-100 group-hover:scale-105 absolute left-5 -top-4 transition-all duration-200 pointer-events-auto bg-[#12161F]/95 backdrop-blur-md border border-[#44E2CD]/60 px-2.5 py-1.5 rounded shadow-2xl min-w-[150px]">
+<div class="text-[9px] font-mono uppercase tracking-wider text-[#44E2CD] font-bold">WING SPAR STRAIN</div>
+<div class="text-[10px] font-mono text-white">FIBER BRAGG: 142 µε</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. THREE-POINT VALUE SECTION (CAPITAL TYPOGRAPHY) -->
+<section class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24 border-t border-[#1E2330]/60">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+<div class="group p-6 rounded-lg border border-transparent hover:border-[#1E2330] hover:bg-[#12161F]/40 transition-all duration-300">
+<div class="w-7 h-7 rounded bg-[#5B8DEF]/10 border border-[#5B8DEF]/30 flex items-center justify-center mb-4 text-[#44E2CD] font-mono text-xs font-bold">
+  01
+</div>
+<h3 class="text-white font-bold text-base uppercase tracking-[0.14em] mb-2.5 group-hover:text-[#44E2CD] transition-colors">
+  REAL-TIME MONITORING
+</h3>
+<p class="text-sm text-[#8B93A3] leading-relaxed">
+  Continuous high-rate telemetry ingestion from edge sensors, FADEC units, and tactical avionics data buses.
+</p>
+</div>
+<div class="group p-6 rounded-lg border border-transparent hover:border-[#1E2330] hover:bg-[#12161F]/40 transition-all duration-300">
+<div class="w-7 h-7 rounded bg-[#5B8DEF]/10 border border-[#5B8DEF]/30 flex items-center justify-center mb-4 text-[#44E2CD] font-mono text-xs font-bold">
+  02
+</div>
+<h3 class="text-white font-bold text-base uppercase tracking-[0.14em] mb-2.5 group-hover:text-[#44E2CD] transition-colors">
+  PREDICTIVE, NOT REACTIVE
+</h3>
+<p class="text-sm text-[#8B93A3] leading-relaxed">
+  Isolate micro-wear and predict bearing, seal, and cylinder RUL before harmful vibration cascades occur.
+</p>
+</div>
+<div class="group p-6 rounded-lg border border-transparent hover:border-[#1E2330] hover:bg-[#12161F]/40 transition-all duration-300">
+<div class="w-7 h-7 rounded bg-[#5B8DEF]/10 border border-[#5B8DEF]/30 flex items-center justify-center mb-4 text-[#44E2CD] font-mono text-xs font-bold">
+  03
+</div>
+<h3 class="text-white font-bold text-base uppercase tracking-[0.14em] mb-2.5 group-hover:text-[#44E2CD] transition-colors">
+  PHYSICS-VALIDATED AI
+</h3>
+<p class="text-sm text-[#8B93A3] leading-relaxed">
+  Neural state predictions constrained by first-principles thermodynamics and fluid mechanics for zero false aborts.
+</p>
+</div>
+</div>
+</section>
+<!-- 4. SINGLE DASHBOARD GLIMPSE -->
+<section class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+<div class="text-center mb-10">
+<span class="text-xs uppercase tracking-[0.25em] text-[#8B93A3] font-mono font-semibold">
+  UNIFIED COCKPIT FOR FLEET-WIDE POWERTRAIN HEALTH
+</span>
+</div>
+<!-- Dashboard Preview Frame with interactive hover glow -->
+<div class="dashboard-glow max-w-5xl mx-auto rounded-xl border border-[#2A2F3A] bg-[#12161F] p-6 lg:p-8 shadow-2xl transition-all duration-300 relative group">
+<!-- Subtle corner grid accent -->
+<div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#44E2CD]/10 to-transparent pointer-events-none rounded-tr-xl"></div>
+<!-- Top Status Bar (Defense-grade capital styling) -->
+<div class="flex flex-wrap items-center justify-between pb-6 mb-6 border-b border-[#1E2330] text-xs font-mono text-[#8B93A3]">
+<div class="flex items-center gap-4">
+<span class="text-white font-bold tracking-wider uppercase">AIRCRAFT ID: UAV-MQ9-04</span>
+<span class="text-[#424752]">·</span>
+<span class="uppercase tracking-wide">MISSION TIME: 04:18:22</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="uppercase tracking-wider">SYSTEM STATUS:</span>
+<span class="text-[#44E2CD] font-bold uppercase tracking-wider flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#44E2CD]"></span>
+  NOMINAL ENVELOPE
+</span>
+</div>
+</div>
+<!-- Main Dashboard View Inside Frame -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Metric: Powertrain Health -->
+<div class="lg:col-span-3 flex flex-col justify-center">
+<span class="text-[11px] font-mono uppercase tracking-[0.2em] text-[#8B93A3] font-bold mb-1">HEALTH INDEX</span>
+<div class="text-4xl lg:text-5xl font-mono font-bold text-white tracking-tight">98.4%</div>
+<span class="text-xs text-[#8B93A3] mt-2 font-mono uppercase tracking-wider text-[11px]">NOMINAL TOLERANCE</span>
+</div>
+<!-- Center Metric: Degraded RUL Forecast Curve -->
+<div class="lg:col-span-5 flex flex-col justify-center border-t lg:border-t-0 lg:border-l lg:border-r border-[#1E2330] lg:px-8 pt-6 lg:pt-0">
+<div class="flex items-center justify-between text-xs font-mono text-[#8B93A3] mb-3">
+<span class="uppercase tracking-[0.16em] font-semibold text-white">RUL FORECAST CURVE</span>
+<span class="text-[#44E2CD] font-bold font-mono tracking-wider">+184.2 HRS</span>
+</div>
+<!-- Clean degraded curve graphic with reactive hover point -->
+<div class="w-full h-24 relative flex items-end">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 300 90">
+<defs>
+<lineargradient id="curveGradient" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#5B8DEF"></stop>
+<stop offset="100%" stop-color="#44E2CD"></stop>
+</lineargradient>
+</defs>
+<path d="M0,15 Q75,18 150,35 T300,60" fill="none" stroke="url(#curveGradient)" stroke-width="2.5"></path>
+<!-- Reference baseline -->
+<line stroke="#2A2F3A" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="300" y1="75" y2="75"></line>
+<!-- Point on curve with pulse -->
+<circle class="shadow-lg" cx="210" cy="46" fill="#44E2CD" r="4.5"></circle>
+<circle class="opacity-60 animate-ping" cx="210" cy="46" fill="none" r="9" stroke="#44E2CD" stroke-width="1"></circle>
+</svg>
+</div>
+<div class="flex items-center justify-between text-[10px] font-mono text-[#8B93A3] mt-2 uppercase tracking-wider">
+<span>DEPLOYMENT T-0</span>
+<span>OVERHAUL THRESHOLD (120H)</span>
+</div>
+</div>
+<!-- Right Metric: 4 Simple Key Telemetry Parameters -->
+<div class="lg:col-span-4 flex flex-col gap-3 justify-center pt-6 lg:pt-0 border-t lg:border-t-0 border-[#1E2330]">
+<div class="flex items-center justify-between text-xs font-mono py-1.5 border-b border-[#1E2330]/60">
+<span class="text-[#8B93A3] uppercase tracking-wider">CYLINDER HEAD TEMP</span>
+<span class="text-white font-bold tracking-tight">342°C</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono py-1.5 border-b border-[#1E2330]/60">
+<span class="text-[#8B93A3] uppercase tracking-wider">RAIL PRESSURE</span>
+<span class="text-[#44E2CD] font-bold tracking-tight">4.2 BAR</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono py-1.5 border-b border-[#1E2330]/60">
+<span class="text-[#8B93A3] uppercase tracking-wider">SHAFT ORBIT RUNOUT</span>
+<span class="text-white font-bold tracking-tight">0.08G</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono py-1.5">
+<span class="text-[#8B93A3] uppercase tracking-wider">MAIN AVIONICS BUS</span>
+<span class="text-white font-bold tracking-tight">28.4V</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. FINAL CTA (ALL-CAPS AUTHORITATIVE) -->
+<section class="max-w-7xl mx-auto px-6 lg:px-8 py-28 lg:py-36 text-center flex flex-col items-center border-t border-[#1E2330]/40">
+<div class="text-[11px] font-mono uppercase tracking-[0.3em] text-[#44E2CD] mb-3 font-semibold">MISSION ASSURANCE INFRASTRUCTURE</div>
+<h2 class="text-3xl lg:text-4xl text-white font-extrabold mb-6 tracking-tight uppercase max-w-2xl leading-snug">
+  READY TO SEE YOUR FLEET DIFFERENTLY?
+</h2>
+<p class="text-sm text-[#8B93A3] max-w-lg mb-8 leading-relaxed">
+  Integrate high-rate physics twins into existing ground control stations in under 48 hours.
+</p>
+<div>
+<a class="inline-flex items-center justify-center px-8 py-4 bg-[#5B8DEF] hover:bg-[#4d7ddc] text-white rounded text-xs uppercase tracking-[0.22em] font-bold transition-all duration-300 glow-cyan-hover shadow-xl shadow-[#5B8DEF]/25" href="#">
+  REQUEST ACCESS
+</a>
+</div>
+</section>
+</main>
+<!-- 6. FOOTER (CAPITAL TYPOGRAPHY) -->
+<footer class="w-full bg-[#0A0E14] border-t border-[#1E2330]">
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#6B7280]">
+<!-- Left Info -->
+<div class="flex items-center gap-2">
+<span class="text-white font-bold tracking-[0.2em] uppercase">AEROTWIN</span>
+<span>·</span>
+<span class="uppercase tracking-wider">© 2026 AEROTWIN TECHNOLOGIES INC. ALL RIGHTS RESERVED.</span>
+</div>
+<!-- Right Row of Links -->
+<div class="flex items-center gap-6 uppercase tracking-wider text-[11px]">
+<a class="hover:text-white transition-colors" href="#">SECURITY</a>
+<a class="hover:text-[#44E2CD] transition-colors" href="#">ITAR COMPLIANCE</a>
+<a class="hover:text-white transition-colors" href="#">AVIONICS SDK</a>
+<a class="hover:text-white transition-colors" href="#">CONTACT</a>
+<span class="text-[#424752]">·</span>
+<a class="inline-flex items-center gap-1.5 text-[#44E2CD] hover:text-white border border-[#44E2CD]/30 hover:border-[#44E2CD] rounded px-3 py-1 transition-all duration-200 font-bold tracking-widest" href="http://localhost:5175/login">
+<span class="w-1.5 h-1.5 rounded-full bg-[#44E2CD] animate-pulse inline-block"></span>
+VIEW LIVE DEMO
+</a>
+</div>
+</div>
+</footer>
+<!-- 7. INTERACTIVE VANILLA JS MOUSE-TRACKING & PARALLAX SCRIPT -->
+<script>
+  (function() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const heroStage = document.getElementById('hero-stage');
+    const tiltContainer = document.getElementById('tilt-card-container');
+    const tiltCard = document.getElementById('tilt-card');
+    const azReadout = document.getElementById('telemetry-az');
+    const elReadout = document.getElementById('telemetry-el');
+    const gridReadout = document.getElementById('telemetry-grid');
+
+    if (!heroStage || !tiltCard) return;
+
+    let targetRotateX = 0;
+    let targetRotateY = 0;
+    let currentRotateX = 0;
+    let currentRotateY = 0;
+    let isTracking = false;
+
+    // Handle mouse movement across hero section
+    heroStage.addEventListener('pointermove', function(e) {
+      isTracking = true;
+      const rect = heroStage.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Normalized coordinates (-1 to 1)
+      const normX = (x / rect.width) * 2 - 1;
+      const normY = (y / rect.height) * 2 - 1;
+
+      // 3D tilt angles (subtle aerospace pitch/roll)
+      targetRotateY = normX * 12; // yaw
+      targetRotateX = -normY * 10; // pitch
+
+      // Dynamic telemetry readout update on mouse move
+      if (azReadout && elReadout) {
+        const azVal = (42.8 + normX * 8.4).toFixed(1);
+        const elVal = (14.2 - normY * 6.1).toFixed(1);
+        azReadout.textContent = (azVal < 100 ? '0' : '') + azVal + '° N';
+        elReadout.textContent = (elVal >= 0 ? '+' : '') + elVal + '°';
+      }
+
+      if (gridReadout) {
+        const sector = Math.abs(Math.floor((normX + 1) * 20) + 10);
+        gridReadout.textContent = `UTM-32U-${sector}`;
+      }
+    });
+
+    heroStage.addEventListener('pointerleave', function() {
+      targetRotateX = 0;
+      targetRotateY = 0;
+    });
+
+    // Smooth RAF animation loop with lerping
+    function animate() {
+      currentRotateX += (targetRotateX - currentRotateX) * 0.08;
+      currentRotateY += (targetRotateY - currentRotateY) * 0.08;
+
+      tiltCard.style.transform = `rotateX(${currentRotateX.toFixed(2)}deg) rotateY(${currentRotateY.toFixed(2)}deg)`;
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+</script>
+</body></html>
