@@ -63,7 +63,7 @@ export class ApiTimeoutError extends Error {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, params, anonymous = false, timeoutMs } = options;
 
-  const url = new URL(`${API_URL}${path}`);
+  const url = new URL(`${API_URL}${path}`, window.location.href);
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined) url.searchParams.set(key, String(value));

@@ -1,0 +1,48 @@
+steps:
+  # Build backend
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'infra/docker/Dockerfile.backend'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-backend:latest'
+      - '.'
+    timeout: '1800s'
+
+  # Build frontend
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'infra/docker/Dockerfile.frontend'
+      - '--build-arg'
+      - 'VITE_API_URL=/api/v1'
+      - '--build-arg'
+      - 'VITE_WS_URL=/api/v1'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-frontend:latest'
+      - './frontend'
+    timeout: '600s'
+
+  # Build simulator
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'infra/docker/Dockerfile.simulator'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-simulator:latest'
+      - '.'
+    timeout: '600s'
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-backend:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-frontend:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/aerotwin/aerotwin-simulator:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '3600s'

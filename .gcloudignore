@@ -1,0 +1,53 @@
+.git
+.gitignore
+node_modules
+__pycache__
+*.pyc
+
+# Local Python virtual environments
+backend/.venv/
+.venv/
+
+# ML training data and saved models (COPYed into image via Dockerfile)
+ml/training/**/*.txt
+ml/training/**/*.csv
+ml/training/**/*.joblib
+ml/training/**/*.json
+ml/training/**/saved_models/
+*.pyo
+.env
+.env.prod
+*.log
+.DS_Store
+Thumbs.db
+
+# Large deployment artifacts
+*.zip
+*.tgz
+*.tar.gz
+aerotwin.zip
+
+# Pre-downloaded wheels (not needed for Cloud Build)
+docker_wheels/
+
+# Leftover build contexts
+infra/docker/.sim-build/
+
+# Large ML model/saved files
+*.h5
+*.pkl
+*.joblib
+*.pt
+*.onnx
+*.bin
+*.safetensors
+ml/data/
+
+# Frontend build artifacts
+frontend/dist/
+frontend/node_modules/
+
+# IDE / scratch
+.gemini/
+.vscode/
+.idea/

@@ -86,7 +86,7 @@ export function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<string>("operator");
+  const [role, setRole] = useState<string>("maintenance_engineer");
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<Partial<Record<string, boolean>>>({});
   const [apiError, setApiError] = useState<string | null>(null);

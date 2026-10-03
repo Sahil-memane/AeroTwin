@@ -1,0 +1,123 @@
+# VM-side production stack: pulls pre-built images from GCP Artifact Registry.
+# Images are built locally and pushed via build-and-push.sh, NOT built on the VM.
+#
+#   On VM: docker compose --env-file .env.prod -f docker-compose.vm.yml up -d
+#
+name: aerotwin-prod
+
+services:
+  db:
+    image: timescale/timescaledb:2.17.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aerotwin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-aerotwin}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mqtt:
+    image: eclipse-mosquitto:2.0.20
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto.passwd:/mosquitto/config/passwd:ro
+      - mqttdata:/mosquitto/data
+    ports:
+      - "${MQTT_EDGE_BIND:-127.0.0.1}:8883:8883"
+
+  backend:
+    image: ${REGISTRY}/aerotwin-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-aerotwin}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-aerotwin}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (>=32 chars)}
+      EDGE_API_KEY: ${EDGE_API_KEY:?set EDGE_API_KEY (>=16 chars)}
+      CORS_ORIGINS: https://${DOMAIN:?set DOMAIN}
+      MQTT_BROKER_URL: mqtt://mqtt:1883
+      REDIS_URL: redis://redis:6379/0
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      SIMULATOR_USE_DOCKER: "true"
+      SIMULATOR_CONTAINER_NAME: aerotwin-simulator
+      SIMULATOR_IMAGE: ${REGISTRY}/aerotwin-simulator:${IMAGE_TAG:-latest}
+      DOCKER_NETWORK: aerotwin-prod_default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEM_LIMIT:-768m}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    image: ${REGISTRY}/aerotwin-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+
+  # On-demand simulator: started by backend API, never auto-started.
+  simulator:
+    image: ${REGISTRY}/aerotwin-simulator:${IMAGE_TAG:-latest}
+    container_name: aerotwin-simulator
+    profiles:
+      - demo
+    restart: "no"
+    environment:
+      MQTT_HOST: mqtt
+      ENGINE_ID: ${DEFAULT_ENGINE_ID:-00000000-0000-0000-0000-000000000001}
+    depends_on:
+      - mqtt
+
+volumes:
+  pgdata:
+  redisdata:
+  mqttdata:
+  caddy_data:
+  caddy_config:

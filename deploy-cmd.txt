@@ -1,0 +1,1 @@
+sudo dos2unix /tmp/remote-deploy-2.sh && sudo -iu deploy bash /tmp/remote-deploy-2.sh
