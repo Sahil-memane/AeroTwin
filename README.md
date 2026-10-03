@@ -1,7 +1,5 @@
 # AeroTwin — Digital Twin Operations Platform
 
-> **Live deployment:** https://aerotwin-clutchx.duckdns.org
-
 AeroTwin is a full-stack digital twin operations platform for UAV engine fleets. It ingests real-time (or simulated) engine telemetry over MQTT, runs ML-based predictive maintenance models (RUL, fault detection, auxiliary), renders an interactive 3D digital twin, and surfaces an AI-powered maintenance copilot backed by a RAG knowledge base.
 
 ---
